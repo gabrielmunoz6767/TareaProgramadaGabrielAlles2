@@ -24,7 +24,7 @@ def verificarBaseDatos():
     """
     Verifica si existe el archivo de base de datos persistente.
     """
-    return os.path.exists("donadores.dat")
+    return os.path.exists("donadores.dat") # (esto genuinamente lo vi en un tutorial de datos en py, y creo que sera necesario)
 
 def validarCedula(cedulaTexto):
     """
@@ -62,41 +62,73 @@ def insertarNuevoDonador(cedula, nombre, tele, correo, provincia, peso, sangre):
     Retorna (True, "Mensaje éxito") o (False, "Mensaje de error")
     """
     global baseDatosDonadores
-
-    # 1. Validaciones de formato
+    # Validaciones de formato
     if not validarCedula(cedula):
         return False, "La cédula debe tener el formato #-####-#### (el primer dígito no puede ser 0)."
-    
     if cedula in baseDatosDonadores:
         return False, f"El donador con la cédula {cedula} ya se encuentra registrado."
-        
     if not validarNombre(nombre):
         return False, "El nombre completo solo debe contener letras y espacios."
-
     if not validarTelefono(tele):
         return False, "El teléfono debe tener el formato ####-#### (no puede iniciar con 0, 1, 3 o 5)."
-
     if not validarCorreo(correo):
         return False, "El correo electrónico debe pertenecer a los dominios autorizados:\n@gmail.com, @costarricense.cr, @racsa.go.cr o @ccss.sa.cr"
-
-    # validacion del peso del usuario donador
     try:
         pesoFlotante = float(peso)
         if not (50 <= pesoFlotante <= 120):
             return False, "El peso del donador debe estar estrictamente entre los 50 y 120 kg."
     except ValueError:
-        return False, "El peso debe ser un número válido (ej. 72.5)."
-
+        return False, "El peso debe ser un número valido por ejemplo: '67.7'"
     # 3. Aqui es en donde se guardan los datos en el diccionario global
     baseDatosDonadores[cedula] = [
+    nombre.strip(),
+    tele,
+    correo.lower().strip(),
+    provincia,
+    pesoFlotante,
+    sangre,
+    [] ]
+    return True, "Donador registrado exitosamente en el sistema."
+
+def buscarDonadorPorCedula(cedulaTexto):
+    """
+    Busca una cédula en el diccionario global y retorna los datos del donador si existe, o None si no se encuentra
+    """
+    global baseDatosDonadores
+    if cedulaTexto in baseDatosDonadores:
+        return baseDatosDonadores[cedulaTexto]
+    return None
+
+def actualizarDatosDonador(cedula, nombre, tele, correo, provincia, peso, sangre):
+    """
+    Funcionamiento: Valida y actualiza los datos de un donador existente ademas de que mantiene el historial de donaciones intacto
+    entrdas: cedula, nombre, telefono, correo, provincia, peso y sangre
+    salida: (True, "Mensaje de éxito") o (False, "Mensaje de error")
+    """
+    global baseDatosDonadores
+    if cedula not in baseDatosDonadores:
+        return False, "Error interno: El donador ya no se encuentra en el sistema."
+    if not validarNombre(nombre):
+        return False, "El nombre completo solo debe contener letras y espacios."
+    if not validarTelefono(tele):
+        return False, "El teléfono debe tener el formato ####-#### (no puede iniciar con 0, 1, 3 o 5)."
+    if not validarCorreo(correo):
+        return False, "El correo electrónico debe pertenecer a los dominios autorizados:\n@gmail.com, @costarricense.cr, @racsa.go.cr o @ccss.sa.cr"
+    try:
+        pesoFlotante = float(peso)
+        if not (50 <= pesoFlotante <= 120):
+            return False, "El peso del donador debe estar estrictamente entre los 50 y 120 kg."
+    except ValueError:
+        return False, "El peso debe ser un número valido por ejemplo: '67.7'"
+    historialPrevio = baseDatosDonadores[cedula][6] # justo aqui, se preserva el historial y se le asigna una variable para despues actualizar el diccionario sin perder informacion
+    baseDatosDonadores[cedula] = [ # aqui se actualizan los datos del donador y se mantiene el historial intacto
         nombre.strip(),
         tele,
         correo.lower().strip(),
         provincia,
         pesoFlotante,
         sangre,
-        [] 
+        historialPrevio 
     ]
     
-    return True, "Donador registrado exitosamente en el sistema."
-
+    return True, "Los datos del donador han sido actualizados exitosamente."
