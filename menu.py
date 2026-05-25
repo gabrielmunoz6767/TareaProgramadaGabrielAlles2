@@ -5,85 +5,146 @@
 
 # librerias importadas
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk  # Importamos ttk para usar Combobox, que es una lista desplegable más moderna y estilizada
+from tkinter import messagebox # mensajes emergentes para mostrar información o errores al usuario
+from tkinter import ttk  # se importa ttk para usar Combobox, que es una lista desplegable más moderna y estilizada
 import funciones as fn # quisimos abreviarla, puesto que poner .funciones en todo lado se hace mas largo todo
 
 def abrirInsertarDonador():
     """
-    Crea una subventana para capturar los datos del nuevo donador
+    Crea la subventana con el diseño exacto solicitado: campos de Cédula, Nombre, 
+    Fecha de Nacimiento, Tipo de Sangre, Sexo (Radio Buttons), Peso, Teléfono, Correo,
+    y los botones Registrar, Limpiar y Regresar.
     """
     ventanaFormulario = tk.Toplevel()
-    ventanaFormulario.title("Registrar Nuevo Donador")   # crea la ventana para el formulario de registro de donadores
-    ventanaFormulario.geometry("450x550")
-    ventanaFormulario.grab_set()  # Bloquea la ventana principal mientras esta este abierta
+    ventanaFormulario.title("Registrar Nuevo Donador")
+    ventanaFormulario.geometry("500x650")
+    ventanaFormulario.grab_set()  # Bloquea la ventana principal
 
     # Título de la subventana
     lblFormulario = tk.Label(ventanaFormulario, text="Formulario de Inscripción", font=("Arial", 14, "bold"))
     lblFormulario.pack(pady=10)
 
+    # Contenedor para alinear correctamente los campos de texto
+    marcoCampos = tk.Frame(ventanaFormulario)
+    marcoCampos.pack(padx=20, pady=5, fill="x")
+
     # Campo: Cédula
-    tk.Label(ventanaFormulario, text="Cédula (#-####-####):", font=("Arial", 10)).pack(anchor="w", padx=40)
-    txtCedula = tk.Entry(ventanaFormulario, width=40)      # este es el campo de texto para la cedula, se le asigna a una variable para luego recuperar su valor al momento de guardar el donador
-    txtCedula.pack(pady=3)
+    tk.Label(marcoCampos, text="Cédula (#-####-####):", font=("Arial", 10)).pack(anchor="w", padx=20)
+    campoCedula = tk.Entry(marcoCampos, width=45)
+    campoCedula.pack(pady=2, padx=20)
 
     # Campo: Nombre Completo
-    tk.Label(ventanaFormulario, text="Nombre Completo:", font=("Arial", 10)).pack(anchor="w", padx=40)
-    campoNombre = tk.Entry(ventanaFormulario, width=40)
-    campoNombre.pack(pady=3)
+    tk.Label(marcoCampos, text="Nombre Completo:", font=("Arial", 10)).pack(anchor="w", padx=20)
+    campoNombre = tk.Entry(marcoCampos, width=45)
+    campoNombre.pack(pady=2, padx=20)
 
-    # Campo: Teléfono
-    tk.Label(ventanaFormulario, text="Teléfono (####-####):", font=("Arial", 10)).pack(anchor="w", padx=40)
-    campoTelefono = tk.Entry(ventanaFormulario, width=40)
-    campoTelefono.pack(pady=3)
-
-    # Campo: Correo Electrónico
-    tk.Label(ventanaFormulario, text="Correo Electrónico:", font=("Arial", 10)).pack(anchor="w", padx=40)
-    campoCorreo = tk.Entry(ventanaFormulario, width=40)
-    campoCorreo.pack(pady=3)
-
-    # Campo: Provincia (Lista Desplegable)
-    tk.Label(ventanaFormulario, text="Provincia de Residencia:", font=("Arial", 10)).pack(anchor="w", padx=40)
-    provinciasOpciones = ["1. San José", "2. Alajuela", "3. Cartago", "4. Heredia", "5. Guanacaste", "6. Puntarenas", "7. Limón", "8. Naturalizado"]
-    listaProvincia = ttk.Combobox(ventanaFormulario, values=provinciasOpciones, width=37, state="readonly") # aqui se usa el combobox para mostrar la lista de provincias, se le asigna a una variable para luego recuperar su valor al momento de guardar el donador
-    listaProvincia.current(0) # selecciona por defecto la provincia de san jose para evitar que al registrarlo el campo quede vacio
-    listaProvincia.pack(pady=3)
-
-    # Campo: Peso
-    tk.Label(ventanaFormulario, text="Peso en kg (50 - 120):", font=("Arial", 10)).pack(anchor="w", padx=40)
-    campoPeso = tk.Entry(ventanaFormulario, width=40)
-    campoPeso.pack(pady=3)
+    # Campo NUEVO: Fecha de Nacimiento
+    tk.Label(marcoCampos, text="Fecha de Nacimiento (DD/MM/AAAA):", font=("Arial", 10)).pack(anchor="w", padx=20)
+    campoFechaNac = tk.Entry(marcoCampos, width=45)
+    campoFechaNac.pack(pady=2, padx=20)
 
     # Campo: Tipo de Sangre (Lista Desplegable)
-    tk.Label(ventanaFormulario, text="Tipo de Sangre:", font=("Arial", 12)).pack(anchor="w", padx=40)
+    tk.Label(marcoCampos, text="Tipo de Sangre:", font=("Arial", 10)).pack(anchor="w", padx=20)
     tiposSangreOpciones = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"]
-    listaSangre = ttk.Combobox(ventanaFormulario, values=tiposSangreOpciones, width=37, state="readonly")
+    listaSangre = ttk.Combobox(marcoCampos, values=tiposSangreOpciones, width=42, state="readonly")
     listaSangre.current(0)
-    listaSangre.pack(pady=3)
+    listaSangre.pack(pady=2, padx=20)
 
-    def ejecutarGuardado(): # revisar ahora
-        """
-        funcionamiento: Recupera los datos de los campos, llama a la función de inserción para guardar el nuevo donador, y muestra un mensaje al usuario con el resultado de la operación
-        """
-        cedulaInput = txtCedula.get()
-        nombreInput = campoNombre.get()
-        telefonoInput = campoTelefono.get()
-        correoInput = campoCorreo.get()
-        provinciaInput = listaProvincia.get().split(".")[0]
-        pesoInput = campoPeso.get()
-        sangreInput = listaSangre.get()
-        
-        exito, mensaje = fn.insertarNuevoDonador(
-            cedulaInput, nombreInput, telefonoInput, correoInput, provinciaInput, pesoInput, sangreInput)
-        if exito:
-            messagebox.showinfo("Operación Exitosa", mensaje, parent=ventanaFormulario)
-            ventanaFormulario.destroy() # Cerramos la ventana al completarse exitosamente
-        else:
-            messagebox.showerror("Error de Validación", mensaje, parent=ventanaFormulario)
+    # Campo NUEVO: Sexo (Radio Buttons)
+    tk.Label(marcoCampos, text="Sexo:", font=("Arial", 10)).pack(anchor="w", padx=20)
+    variableSexo = tk.StringVar(value="Masculino")  # Marcado por omisión como pide la imagen
+    
+    marcoRadioButtons = tk.Frame(marcoCampos)
+    marcoRadioButtons.pack(anchor="w", padx=20, pady=2)
+    
+    rbMasculino = tk.Radiobutton(marcoRadioButtons, text="Masculino", variable=variableSexo, value="Masculino", font=("Arial", 10))
+    rbMasculino.pack(side="left", padx=5)
+    
+    rbFemenino = tk.Radiobutton(marcoRadioButtons, text="Femenino", variable=variableSexo, value="Femenino", font=("Arial", 10))
+    rbFemenino.pack(side="left", padx=5)
 
+    # Campo: Peso
+    tk.Label(marcoCampos, text="Peso en kg (50 - 120):", font=("Arial", 10)).pack(anchor="w", padx=20)
+    campoPeso = tk.Entry(marcoCampos, width=45)
+    campoPeso.pack(pady=2, padx=20)
+
+    # Campo: Teléfono
+    tk.Label(marcoCampos, text="Teléfono (####-####):", font=("Arial", 10)).pack(anchor="w", padx=20)
+    campoTelefono = tk.Entry(marcoCampos, width=45)
+    campoTelefono.pack(pady=2, padx=20)
+
+    # Campo: Correo Electrónico
+    tk.Label(marcoCampos, text="Correo Electrónico:", font=("Arial", 10)).pack(anchor="w", padx=20)
+    campoCorreo = tk.Entry(marcoCampos, width=45)
+    campoCorreo.pack(pady=2, padx=20)
+
+    # Campo: Provincia (
+    tk.Label(marcoCampos, text="Provincia de Residencia:", font=("Arial", 10)).pack(anchor="w", padx=20)
+    provinciasOpciones = ["1. San José", "2. Alajuela", "3. Cartago", "4. Heredia", "5. Guanacaste", "6. Puntarenas", "7. Limón", "8. Naturalizado"]
+    listaProvincia = ttk.Combobox(marcoCampos, values=provinciasOpciones, width=42, state="readonly")
+    listaProvincia.current(0)
+    listaProvincia.pack(pady=2, padx=20)
+
+    marcoBotones = tk.Frame(ventanaFormulario)
+    marcoBotones.pack(pady=20)
+
+    # Botón registrar
+    botonRegistrar = tk.Button(
+        marcoBotones, text="Registrar", bg="#E0631F", fg="white", font=("Arial", 10, "bold"), width=12,
+        command=lambda: ejecutarGuardadoDonador(ventanaFormulario, campoCedula, campoNombre, campoFechaNac, variableSexo, campoTelefono, campoCorreo, listaProvincia, campoPeso, listaSangre))
+    botonRegistrar.pack(side="left", padx=10)
+    # Botón Limpiar
+    botonLimpiar = tk.Button(
+        marcoBotones, text="Limpiar", bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
+        command=lambda: limpiarFormularioDonador(campoCedula, campoNombre, campoFechaNac, variableSexo, campoTelefono, campoCorreo, listaProvincia, campoPeso, listaSangre))
+    botonLimpiar.pack(side="left", padx=10)
+    # Botón regresas
+    botonRegresar = tk.Button(
+        marcoBotones, text="Regresar", bg="#A31D1D", fg="white", font=("Arial", 10, "bold"), width=12,command=ventanaFormulario.destroy)
+    botonRegresar.pack(side="left", padx=10) # padx hace que los botones no queden tan pegados entre si, le da un espacio horizontal
+
+def ejecutarGuardadoDonador(ventanaFormulario, campoCedula, campoNombre, campoFechaNac, variableSexo, campoTelefono, campoCorreo, listaProvincia, campoPeso, listaSangre):
+    """
+    Funcionamiento: Recupera los datos de los campos de la interfaz, llama a la función de inserción 
+    para guardar el nuevo donador, y muestra el mensaje detallado del resultado.
+    """
+    cedulaInput = campoCedula.get().strip()
+    nombreInput = campoNombre.get().strip()
+    fechaNacInput = campoFechaNac.get().strip()
+    sexoInput = variableSexo.get()
+    telefonoInput = campoTelefono.get().strip()
+    correoInput = campoCorreo.get().strip()
+    provinciaInput = listaProvincia.get().split(".")[0]
+    pesoInput = campoPeso.get().strip()
+    sangreInput = listaSangre.get()
+    
+    exito, mensaje = fn.insertarNuevoDonador(
+        cedulaInput, nombreInput, fechaNacInput, sexoInput, 
+        telefonoInput, correoInput, provinciaInput, pesoInput, sangreInput
+    )
+    
+    if exito:
+        messagebox.showinfo("Operación Exitosa", mensaje, parent=ventanaFormulario)
+        ventanaFormulario.destroy()  # Cierra y regresa al menú principal
+    else:
+        messagebox.showerror("Error de Validación", mensaje, parent=ventanaFormulario)
     # Botón para Registrar Donador
-    botontnRegistrar = tk.Button(ventanaFormulario, text="Registrar Donador", bg="#E0631F", fg="white", font=("Arial", 11, "bold"), width=15, command=ejecutarGuardado) # command hace que al hacer click en el boton se ejecute la funcion ejecutarGuardado, que es la que recupera los datos de los campos y llama a la funcion de insercion para guardar el nuevo donador, ademas de mostrar un mensaje al usuario con el resultado de la operacion
+    botontnRegistrar = tk.Button(ventanaFormulario, text="Registrar Donador", bg="#E0631F", fg="white", font=("Arial", 11, "bold"), width=15, command=lambda: ejecutarGuardadoDonador(ventanaFormulario, campoCedula, campoNombre, campoFechaNac, variableSexo, campoTelefono, campoCorreo, listaProvincia, campoPeso, listaSangre)) # command hace que al hacer click en el boton se ejecute la funcion ejecutarGuardado, que es la que recupera los datos de los campos y llama a la funcion de insercion para guardar el nuevo donador, ademas de mostrar un mensaje al usuario con el resultado de la operacion
     botontnRegistrar.pack(pady=20) # pady hace que el boton no quede tan pegado al ultimo campo, le da un espacio vertical
+
+def limpiarFormularioDonador(campoCedula, campoNombre, campoFechaNac, variableSexo, campoTelefono, campoCorreo, listaProvincia, campoPeso, listaSangre):
+    """
+    Limpia todos los campos del formulario de registro y restablece los valores por defecto.
+    """
+    campoCedula.delete(0, tk.END)
+    campoNombre.delete(0, tk.END)
+    campoFechaNac.delete(0, tk.END)
+    variableSexo.set("Masculino")
+    campoTelefono.delete(0, tk.END)
+    campoCorreo.delete(0, tk.END)
+    listaProvincia.current(0)
+    campoPeso.delete(0, tk.END)
+    listaSangre.current(0) # current(0) hace que se seleccione la primera opcion de la lista desplegable
 
 def abrirGenerarDonadores():
     pass # esto es nuevo, esta palabra lo que hace es que no se caiga el codigo, puesto que intentara correr una funcion que todavia no esta implementada
@@ -94,28 +155,27 @@ def abrirActualizarDonador():
 def abrirEliminarDonador(): # q
     pass
 
-def realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, btnBuscar, nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo, listaProvincia, pesoDonador, campoPeso, listaSangre, btnConfirmar, tiposSangreOpciones):
+def realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, botonBuscar, nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo, listaProvincia, pesoDonador, campoPeso, listaSangre, botonConfirmar, tiposSangreOpciones, fechaNacDonador, variableSexoDonador):
     """
-    Función independiente encargada de la lógica de búsqueda.
+    Función  encargada de la lógica de búsqueda.
     Recibe los componentes de la interfaz como parámetros para poder interactuar con ellos.
     """
     cedulaAId = cedulaBuscada.get().strip()
     donadorEncontrado = fn.buscarDonadorPorCedula(cedulaAId)
-
     if donadorEncontrado is None:
         messagebox.showerror("No Encontrado", f"No se encontró ningún donador registrado con la cédula {cedulaAId}.", parent=ventanaActualizar)
         return
-    campoNombre.config(state="normal")            # .config hace que el campo de texto se vuelva editable
+    campoNombre.config(state="normal")            
     campoTelefono.config(state="normal")
     campoCorreo.config(state="normal")
-    listaProvincia.config(state="readonly")        # aqui readonly hace que solo se pueda leer y seleciconar de una lista
+    listaProvincia.config(state="readonly")       
     campoPeso.config(state="normal")
     listaSangre.config(state="readonly")
-    btnConfirmar.config(state="normal")
-    nombreDonador.set(donadorEncontrado[0])         # aqui se asignan los valores del donador encontrado a las variables que estan vinculadas a los campos de texto
+    botonConfirmar.config(state="normal")
+    nombreDonador.set(donadorEncontrado[0])         
     telefonoDonador.set(donadorEncontrado[1])
     correoDonador.set(donadorEncontrado[2])
-    try:                                             # aqui se hace un intento de convertir la provincia del donador encontrado a un indice para seleccionarlo en la lista desplegable, si por alguna razon no se puede hacer esto (por ejemplo, si el valor de la provincia no es un numero o no esta en el formato esperado), se selecciona por defecto la primera opcion de la lista 
+    try:                                             
         indiceProvincia = int(donadorEncontrado[3]) - 1   
         listaProvincia.current(indiceProvincia)
     except (ValueError, IndexError):
@@ -123,47 +183,51 @@ def realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBusca
     pesoDonador.set(str(donadorEncontrado[4]))
     if donadorEncontrado[5] in tiposSangreOpciones:
         listaSangre.set(donadorEncontrado[5])
-    entradaCedulaBuscar.config(state="disabled")     # aqui se bloquea la barra de búsqueda superior para evitar que se busque otro donador
-    btnBuscar.config(state="disabled")
+    if len(donadorEncontrado) > 7:
+        fechaNacDonador.set(donadorEncontrado[7])
+    if len(donadorEncontrado) > 8:
+        variableSexoDonador.set(donadorEncontrado[8])
+    entradaCedulaBuscar.config(state="disabled")     
+    botonBuscar.config(state="disabled")
 
-def realizarActualizacionDonador(ventanaActualizar, cedulaBuscada, nombreDonador, telefonoDonador, correoDonador, listaProvincia, pesoDonador, listaSangre):
+def realizarActualizacionDonador(ventanaActualizar, cedulaBuscada, nombreDonador, telefonoDonador, correoDonador, listaProvincia, pesoDonador, listaSangre, fechaNacDonador, variableSexoDonador):
     """
-    Funcinamiento: Recupera los datos de los campos, llama a la función de actualización para modificar el donador, y muestra un mensaje al usuario con el resultado de la operación
-    Entradas: ventanaActualizar (para mostrar mensajes), cedulaBuscada (para identificar el donador a actualizar), nombreDonador, telefonoDonador, correoDonador, listaProvincia, pesoDonador, listaSangre (para obtener los nuevos datos del donador)
-    Salida: Muestra un mensaje de éxito o error dependiendo del resultado de la actualización
+    Funcionamiento: Recupera los datos de los campos, llama a la función de actualización y muestra el resultado.
     """
-    cedulaInput = cedulaBuscada.get().strip() # se obtiene la cedula del donador a actualizar, se le hace strip para eliminar espacios al inicio o final, lo cual puede causar problemas al buscar el donador en el diccionario global
-    nombreInput = nombreDonador.get()
-    telefonoInput = telefonoDonador.get()
-    correoInput = correoDonador.get()
-    provinciaInput = listaProvincia.get().split(".")[0]
-    pesoInput = pesoDonador.get()
-    sangreInput = listaSangre.get()
-    exito, mensaje = fn.actualizarDatosDonador(cedulaInput, nombreInput, telefonoInput, correoInput, provinciaInput, pesoInput, sangreInput)
-    if exito: # si la actualización fue exitosa, se muestra un mensaje de éxito y se cierra la ventana de actualización, de lo contrario, se muestra un mensaje de error y la ventana permanece abierta para que el usuario pueda corregir los datos
-        messagebox.showinfo("Éxito", mensaje,parent=ventanaActualizar) # showinfo muestra mensaje de informaciion, en este caso se usa para mostrar el mensaje de exito
-        ventanaActualizar.destroy()                         # se cierra la ventana de actualización al completar exitosamente la actualización del donador
-    else:
-        messagebox.showerror("Error", mensaje,parent=ventanaActualizar)
+    cedulaBuscadaTexto = cedulaBuscada.get().strip() 
+    nombreDonadorTexto = nombreDonador.get()
+    telefonoDonadorTexto = telefonoDonador.get()
+    correoDonadorTexto = correoDonador.get()
+    provinciaSeleccionada = listaProvincia.get().split(".")[0]
+    pesoDonadorTexto = pesoDonador.get()
+    sangreSeleccionada = listaSangre.get()
+    fechaNacTexto = fechaNacDonador.get()
+    sexoTexto = variableSexoDonador.get()
+    exito, mensaje = fn.actualizarDatosDonador(cedulaBuscadaTexto, nombreDonadorTexto, telefonoDonadorTexto, correoDonadorTexto, provinciaSeleccionada, pesoDonadorTexto, sangreSeleccionada,fechaNacTexto, sexoTexto)
+    if exito: 
+        messagebox.showinfo("Éxito", mensaje, parent=ventanaActualizar) 
+        ventanaActualizar.destroy() 
+    else: 
+        messagebox.showerror("Error", mensaje, parent=ventanaActualizar)
 
 def abrirActualizarDonador():
     """
-    funcionamiento: Crea una subventana para actualizar los datos de un donador existente. Permite buscar al donador por cédula, mostrar sus datos actuales en campos editables, y confirmar los cambios para actualizar la información del donador.
-    entradas: ninguna, pero dentro de la función se crean variables y componentes de la interfaz para manejar la actualización de datos del donador
-    salida: la ventana de actualización
+    Crea una subventana para actualizar los datos de un donador existente.
     """
     ventanaActualizar = tk.Toplevel()
     ventanaActualizar.title("Actualizar Datos de Donador")
-    ventanaActualizar.geometry("450x650")
-    
-    # se declaran las variables para mostar en el menu
+    ventanaActualizar.geometry("450x750") # Ajustamos el alto para los campos nuevos
+    ventanaActualizar.grab_set() 
+
     cedulaBuscada = tk.StringVar()
     nombreDonador = tk.StringVar()
     telefonoDonador = tk.StringVar()
     correoDonador = tk.StringVar()
     pesoDonador = tk.StringVar()
+    fechaNacDonador = tk.StringVar()
+    variableSexoDonador = tk.StringVar()
 
-    # esta es la parte de diseño del submenu
+    # Diseño del buscador
     lblTitulo = tk.Label(ventanaActualizar, text="Modificar Datos de Donador", font=("Arial", 14, "bold"))
     lblTitulo.pack(pady=10)
 
@@ -174,18 +238,25 @@ def abrirActualizarDonador():
     entradaCedulaBuscar = tk.Entry(marcoBusqueda, width=35, textvariable=cedulaBuscada)
     entradaCedulaBuscar.pack(pady=2)
 
-    btnBuscar = ttk.Button(marcoBusqueda, text="Buscar Donador")
-    btnBuscar.pack(pady=8)
+    botonBuscar = ttk.Button(marcoBusqueda, text="Buscar Donador") 
+    botonBuscar.pack(pady=8)
 
-    # aqui se le muestra al usuario los campos de datos del donador, los cuales puede modificar a gusto de el
-    frmCampos = tk.LabelFrame(ventanaActualizar, text=" Datos Modificables ", padx=10, pady=10)
+    frmCampos = tk.LabelFrame(ventanaActualizar, text=" Datos del Donador ", padx=10, pady=10)
     frmCampos.pack(fill="both", expand=True, padx=20, pady=5)
 
     tk.Label(frmCampos, text="Nombre Completo:").pack(anchor="w")
-    campoNombre = tk.Entry(frmCampos, width=40, textvariable=nombreDonador, state="disabled") # se pone state en disable para que el usuario no pueda escrir nada sin antes poner el numero de cedula del donador
+    campoNombre = tk.Entry(frmCampos, width=40, textvariable=nombreDonador, state="disabled") 
     campoNombre.pack(pady=2)
 
-    tk.Label(frmCampos, text="Teléfono con el siguiente formato: (####-####):").pack(anchor="w")
+    tk.Label(frmCampos, text="Fecha de Nacimiento (No modificable):", fg="gray").pack(anchor="w")
+    campoFechaNac = tk.Entry(frmCampos, width=40, textvariable=fechaNacDonador, state="disabled")
+    campoFechaNac.pack(pady=2)
+
+    tk.Label(frmCampos, text="Sexo (No modificable):", fg="gray").pack(anchor="w")
+    campoSexo = tk.Entry(frmCampos, width=40, textvariable=variableSexoDonador, state="disabled")
+    campoSexo.pack(pady=2)
+
+    tk.Label(frmCampos, text="Teléfono (####-####):").pack(anchor="w")
     campoTelefono = tk.Entry(frmCampos, width=40, textvariable=telefonoDonador, state="disabled")
     campoTelefono.pack(pady=2)
 
@@ -195,7 +266,7 @@ def abrirActualizarDonador():
 
     tk.Label(frmCampos, text="Provincia de Residencia:").pack(anchor="w")
     provinciasOpciones = ["1. San José", "2. Alajuela", "3. Cartago", "4. Heredia", "5. Guanacaste", "6. Puntarenas", "7. Limón", "8. Naturalizado"]
-    listaProvincia = ttk.Combobox(frmCampos, values=provinciasOpciones, width=37, state="disabled") # se usa combobox para mostrar la lista de provincias
+    listaProvincia = ttk.Combobox(frmCampos, values=provinciasOpciones, width=37, state="disabled") 
     listaProvincia.pack(pady=2)
 
     tk.Label(frmCampos, text="Peso en kg (50 - 120):").pack(anchor="w")
@@ -207,30 +278,81 @@ def abrirActualizarDonador():
     listaSangre = ttk.Combobox(frmCampos, values=tiposSangreOpciones, width=37, state="disabled")
     listaSangre.pack(pady=2)
 
-    # boton de confirmar cambios
-    btnConfirmar = ttk.Button(ventanaActualizar, text="Confirmar Cambios", state="disabled")
-    btnConfirmar.pack(pady=15, ipady=2)
+    botonConfirmar = ttk.Button(ventanaActualizar, text="Confirmar Cambios", state="disabled") 
+    botonConfirmar.pack(pady=15, ipady=2)
 
-    # se usa lambda para crear una funcion anonima que congela la ejecucion ,de lo contrario, python ejecutaria la busqueda de inmediato al abrir la ventana
-    btnBuscar.config(
-        command=lambda: realizarBusquedaDonador(
-            ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, btnBuscar,
-            nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo,
-            listaProvincia, pesoDonador, campoPeso, listaSangre, btnConfirmar, tiposSangreOpciones
-        )
-  )
 
-    btnConfirmar.config(
-        command=lambda: realizarActualizacionDonador(
-            ventanaActualizar, cedulaBuscada, nombreDonador, telefonoDonador, correoDonador,
-            listaProvincia, pesoDonador, listaSangre
-        )
-    )
-
+    botonBuscar.config(
+        command=lambda: realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, botonBuscar,nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo,listaProvincia, pesoDonador, campoPeso, listaSangre, botonConfirmar, tiposSangreOpciones,fechaNacDonador, variableSexoDonador))
+    botonConfirmar.config(
+        command=lambda: realizarActualizacionDonador(ventanaActualizar, cedulaBuscada, nombreDonador, telefonoDonador, correoDonador,listaProvincia, pesoDonador, listaSangre, fechaNacDonador, variableSexoDonador))
     entradaCedulaBuscar.focus_set()
 
+def ejecutarInsercionLugar(ventanaLugar):
+    """
+    Función independiente que se ejecuta al dar clic en el botón 'Insertar'.
+    Lee los componentes directamente desde los atributos guardados en la ventana.
+    """
+    # aqui se recuperan los componentes de la pantalla guardados previamente
+    listaProvinciaLugar = ventanaLugar.listaProvinciaLugar
+    campoNuevoLugar = ventanaLugar.campoNuevoLugar
+    
+    # aqui se obtienen los valores ingresados por el usuario
+    provinciaInput = listaProvinciaLugar.get().split(".")[0] 
+    nuevoLugarInput = campoNuevoLugar.get()
+    
+    # aqui se llama funciones.py para guardar en el diccionario
+    exito, mensaje = fn.insertarLugarDonacion(provinciaInput, nuevoLugarInput)
+    if exito:
+        messagebox.showinfo("Éxito", mensaje, parent=ventanaLugar)
+        campoNuevoLugar.delete(0, tk.END) # Limpia la caja de texto para registrar otro hospital
+    else:
+        messagebox.showerror("Error de Validación", mensaje, parent=ventanaLugar)
+        
 def abrirInsertarLugar():
-    pass
+    """
+    Funcionamiento: Crea la subventana para registrar un nuevo lugar de donación según la provincia.
+    """
+    ventanaLugar = tk.Toplevel()
+    ventanaLugar.title("Insertar Lugar de Donación")
+    ventanaLugar.geometry("450x350")
+    ventanaLugar.grab_set() # Bloquea la ventana de atrás
+
+    # Título de la subventana
+    lblTituloLugar = tk.Label(ventanaLugar, text="Registrar Centro de Donación", font=("Arial", 14, "bold"))
+    lblTituloLugar.pack(pady=15)
+
+    # Marco contenedor visual
+    marcoLugar = tk.LabelFrame(ventanaLugar, text=" Datos del Lugar ", padx=15, pady=15)
+    marcoLugar.pack(fill="both", expand=True, padx=25, pady=5)
+
+    # Selección de provincia
+    tk.Label(marcoLugar, text="Seleccione la Provincia:", font=("Arial", 10)).pack(anchor="w")
+    provinciasOpciones = ["1. San José", "2. Alajuela", "3. Cartago", "4. Heredia", "5. Guanacaste", "6. Puntarenas", "7. Limón", "8. Naturalizado"]
+    
+    # Guardamos el combobox como un atributo directo de la ventana
+    ventanaLugar.listaProvinciaLugar = ttk.Combobox(marcoLugar, values=provinciasOpciones, width=37, state="readonly")
+    ventanaLugar.listaProvinciaLugar.current(0) 
+    ventanaLugar.listaProvinciaLugar.pack(pady=5)
+
+    # Área de texto para el nuevo lugar
+    tk.Label(marcoLugar, text="Nombre del Nuevo Lugar (Hospital, Clínica, etc):", font=("Arial", 10)).pack(anchor="w", pady=(10, 0))
+    
+    # Guardamos el entry como un atributo directo de la ventana
+    ventanaLugar.campoNuevoLugar = tk.Entry(marcoLugar, width=40)
+    ventanaLugar.campoNuevoLugar.pack(pady=5)
+
+    # Contenedor horizontal para los botones de abajo
+    marcoBotones = tk.Frame(ventanaLugar)
+    marcoBotones.pack(pady=15)
+
+    # Botón Insertar: Llama de forma tradicional pasando la ventana como argumento
+    botonInsertar = tk.Button(marcoBotones,text="Insertar", bg="#E0631F", fg="white", font=("Arial", 11, "bold"), width=12, command=lambda: ejecutarInsercionLugar(ventanaLugar))
+    botonInsertar.pack(side="left", padx=10)
+    # Botón Salir que cierrra de una vez la ventana
+    botonSalirLugar = tk.Button(marcoBotones, text="Salir", bg="#707070", fg="white", font=("Arial", 11, "bold"), width=12, command=ventanaLugar.destroy)
+    botonSalirLugar.pack(side="left", padx=10)
+    ventanaLugar.campoNuevoLugar.focus_set()
 
 def abrirReportes():
     pass
@@ -238,7 +360,7 @@ def abrirReportes():
 def iniciarPrograma():
     ventanaPrincipal = tk.Tk()
     ventanaPrincipal.title("Banco de Sangre - Sistema de Información")
-    ventanaPrincipal.geometry("500x450")
+    ventanaPrincipal.geometry("500x450") 
     
     existeBaseDatos = fn.verificarBaseDatos() # Aqui se verifica si existe la base de datos, lo cual segun tkinter hace que los botones puedan funcionar
     estadoBloqueado = tk.NORMAL if existeBaseDatos else tk.DISABLED
