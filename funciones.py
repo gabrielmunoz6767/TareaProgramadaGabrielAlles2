@@ -180,6 +180,14 @@ def eliminarDonador(cedula, justificacion):
     global baseDatosDonadores
     if cedula not in baseDatosDonadores:
         return False, f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún."
-    baseDatosDonadores[cedula][9]  = 0             # estado = inactivo
-    baseDatosDonadores[cedula][10] = justificacion  # justificación
+    while len(baseDatosDonadores[cedula]) < 9:
+        baseDatosDonadores[cedula].append("") # Rellena datos biológicos vacíos si el donador era viejo
+    if len(baseDatosDonadores[cedula]) == 9:
+        baseDatosDonadores[cedula].append(0)  # Si no existía, lo agrega al final (0 = inactivo)
+    else:
+        baseDatosDonadores[cedula][9] = 0     # Si ya existía, lo sobreescribe
+    if len(baseDatosDonadores[cedula]) == 10:
+        baseDatosDonadores[cedula].append(justificacion) # Si no existía, la agrega al final
+    else:
+        baseDatosDonadores[cedula][10] = justificacion   # Si ya existía, la sobreescribe
     return True, "Donador eliminado satisfactoriamente."

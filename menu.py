@@ -8,6 +8,30 @@ from tkinter import messagebox # mensajes emergentes para mostrar información o
 from tkinter import ttk  # se importa ttk para usar Combobox, que es una lista desplegable más moderna y estilizada
 import funciones as fn # quisimos abreviarla, puesto que poner .funciones en todo lado se hace mas largo todo
 
+def limpiarFormularioEliminar(cedulaBuscada, nombreDonador, fechaNacDonador, sexoDonador,
+                              entradaCedula, botonBuscar, campoNombre, campoFechaNac,
+                              campoSexo, listaJustificacion, botonConfirmar):
+    """
+    Limpia los campos visuales de la ventana de eliminación y reactiva el buscador superior
+    """
+    cedulaBuscada.set("")
+    nombreDonador.set("")
+    fechaNacDonador.set("")
+    sexoDonador.set("")
+    
+    listaJustificacion.set("")
+    listaJustificacion.config(state="disabled")
+    
+    campoNombre.config(state="disabled")
+    campoFechaNac.config(state="disabled")
+    campoSexo.config(state="disabled")
+    
+    botonConfirmar.config(state="disabled")
+    
+    entradaCedula.config(state="normal")
+    botonBuscar.config(state="normal")
+    entradaCedula.focus_set()
+
 def abrirInsertarDonador():
     """
     Crea la subventana con el diseño exacto solicitado: campos de Cédula, Nombre, 
@@ -116,12 +140,9 @@ def ejecutarGuardadoDonador(ventanaFormulario, campoCedula, campoNombre, campoFe
     provinciaInput = listaProvincia.get().split(".")[0]
     pesoInput = campoPeso.get().strip()
     sangreInput = listaSangre.get()
-    
     exito, mensaje = fn.insertarNuevoDonador(
         cedulaInput, nombreInput, fechaNacInput, sexoInput, 
-        telefonoInput, correoInput, provinciaInput, pesoInput, sangreInput
-    )
-    
+        telefonoInput, correoInput, provinciaInput, pesoInput, sangreInput)
     if exito:
         messagebox.showinfo("Operación Exitosa", mensaje, parent=ventanaFormulario)
         ventanaFormulario.destroy()  # Cierra y regresa al menú principal
@@ -187,8 +208,8 @@ def realizarEliminacionDonador(ventanaEliminar, cedulaBuscada, listaJustificacio
             parent=ventanaEliminar)
         return
     justificacionTexto = listaJustificacion.get()
-    indiceJustificacion = listaJustificacion.current() + 1  # 1 al 7
-    confirmacion = messagebox.askyesno(
+    indiceJustificacion = listaJustificacion.current() + 1  
+    confirmacion = messagebox.askyesno(         # askyesno muestra un mensaje de confirmacion con botones de si y no, y devuelve True si el usuario hace click en si, o False si hace click en no
         "Confirmar eliminación",
         f"¿Está seguro que desea eliminar al donador con cédula {cedulaTexto}?\n\nJustificación:\n{justificacionTexto}",
         parent=ventanaEliminar)
@@ -196,16 +217,21 @@ def realizarEliminacionDonador(ventanaEliminar, cedulaBuscada, listaJustificacio
         exito, mensaje = fn.eliminarDonador(cedulaTexto, indiceJustificacion)
         if exito:
             messagebox.showinfo("Éxito", mensaje, parent=ventanaEliminar)
-            ventanaEliminar.destroy()
+            ventanaEliminar.grab_release()     # Rompe cualquier bloqueo de eventos pegado
+            ventanaEliminar.master.focus_set() # Despierta la ventana principal
+            ventanaEliminar.destroy()          # Cierra la subventana de inmediato
         else:
             messagebox.showerror("Error", mensaje, parent=ventanaEliminar)
     else:
         messagebox.showinfo("Cancelado", "Donador NO eliminado.", parent=ventanaEliminar)
+        ventanaEliminar.grab_release()     
+        ventanaEliminar.master.focus_set() 
+        ventanaEliminar.destroy()
 
 def abrirEliminarDonador():
     ventanaEliminar = tk.Toplevel()
     ventanaEliminar.title("Eliminar Donador")
-    ventanaEliminar.geometry("480x520")
+    ventanaEliminar.geometry("480x650")
     ventanaEliminar.grab_set()
     cedulaBuscada   = tk.StringVar()
     nombreDonador   = tk.StringVar()
@@ -261,6 +287,11 @@ def abrirEliminarDonador():
             ventanaEliminar, cedulaBuscada, listaJustificacion))
     botonConfirmar.pack(side="left", padx=10)
 
+    botonLimpiar = tk.Button(
+        marcoBotones, text="Limpiar",
+        bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=10)
+    botonLimpiar.pack(side="left", padx=5)
+
     botonRegresar = tk.Button(
         marcoBotones, text="Regresar",
         bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
@@ -271,6 +302,14 @@ def abrirEliminarDonador():
         ventanaEliminar, cedulaBuscada, entradaCedula, botonBuscar,
         nombreDonador, campoNombre, fechaNacDonador, campoFechaNac,
         sexoDonador, campoSexo, listaJustificacion, botonConfirmar))
+
+    botonConfirmar.config(command=lambda: realizarEliminacionDonador(
+        ventanaEliminar, cedulaBuscada, listaJustificacion))
+
+    botonLimpiar.config(command=lambda: limpiarFormularioEliminar(
+        cedulaBuscada, nombreDonador, fechaNacDonador, sexoDonador,
+        entradaCedula, botonBuscar, campoNombre, campoFechaNac,
+        campoSexo, listaJustificacion, botonConfirmar))
 
     entradaCedula.focus_set()
 
