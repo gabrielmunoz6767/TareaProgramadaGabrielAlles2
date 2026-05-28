@@ -2,7 +2,6 @@
 # fecha de elaboracion: mayo 19 de 2026
 #  versionn de pyhton: 3.14.3
 # hora de ultima actualizacion: 6:55 pm del jueves 21 de mayo 2026
-
 # librerias importadas
 import tkinter as tk
 from tkinter import messagebox # mensajes emergentes para mostrar información o errores al usuario
@@ -151,9 +150,133 @@ def abrirGenerarDonadores():
 
 def abrirActualizarDonador():
     pass
+#AAA
+def realizarBusquedaParaEliminar(ventanaEliminar, cedulaBuscada, entradaCedula,
+                                  botonBuscar, nombreDonador, campoNombre,
+                                  fechaNacDonador, campoFechaNac, sexoDonador,
+                                  campoSexo, listaJustificacion, botonConfirmar):
+    cedulaTexto = cedulaBuscada.get().strip()
+    donadorEncontrado = fn.buscarDonadorPorCedula(cedulaTexto)
+    if donadorEncontrado is None:
+        messagebox.showerror("No Encontrado",
+            f"La persona con el número de cédula: {cedulaTexto} no está registrado en la base de datos del Banco de Sangre aún.",
+            parent=ventanaEliminar)
+        return
+    # Verifica que esté activo (índice 9)
+    if len(donadorEncontrado) > 9 and donadorEncontrado[9] == 0:
+        messagebox.showerror("No Disponible",
+            f"El donador con cédula {cedulaTexto} ya fue eliminado del sistema.",
+            parent=ventanaEliminar)
+        return
+    nombreDonador.set(donadorEncontrado[0])
+    fechaNacDonador.set(donadorEncontrado[7])
+    sexoDonador.set(donadorEncontrado[8])
+    campoNombre.config(state="normal")
+    campoFechaNac.config(state="normal")
+    campoSexo.config(state="normal")
+    listaJustificacion.config(state="readonly")
+    botonConfirmar.config(state="normal")
+    entradaCedula.config(state="disabled")
+    botonBuscar.config(state="disabled")
 
-def abrirEliminarDonador(): # q
-    pass
+def realizarEliminacionDonador(ventanaEliminar, cedulaBuscada, listaJustificacion):
+    cedulaTexto = cedulaBuscada.get().strip()
+    if listaJustificacion.current() == -1:
+        messagebox.showerror("Error",
+            "Debe seleccionar una justificación antes de continuar.",
+            parent=ventanaEliminar)
+        return
+    justificacionTexto = listaJustificacion.get()
+    indiceJustificacion = listaJustificacion.current() + 1  # 1 al 7
+    confirmacion = messagebox.askyesno(
+        "Confirmar eliminación",
+        f"¿Está seguro que desea eliminar al donador con cédula {cedulaTexto}?\n\nJustificación:\n{justificacionTexto}",
+        parent=ventanaEliminar)
+    if confirmacion:
+        exito, mensaje = fn.eliminarDonador(cedulaTexto, indiceJustificacion)
+        if exito:
+            messagebox.showinfo("Éxito", mensaje, parent=ventanaEliminar)
+            ventanaEliminar.destroy()
+        else:
+            messagebox.showerror("Error", mensaje, parent=ventanaEliminar)
+    else:
+        messagebox.showinfo("Cancelado", "Donador NO eliminado.", parent=ventanaEliminar)
+
+def abrirEliminarDonador():
+    ventanaEliminar = tk.Toplevel()
+    ventanaEliminar.title("Eliminar Donador")
+    ventanaEliminar.geometry("480x520")
+    ventanaEliminar.grab_set()
+    cedulaBuscada   = tk.StringVar()
+    nombreDonador   = tk.StringVar()
+    fechaNacDonador = tk.StringVar()
+    sexoDonador     = tk.StringVar()
+    tk.Label(ventanaEliminar, text="Eliminar Donador",
+             font=("Arial", 14, "bold")).pack(pady=10)
+    # --- Sección búsqueda ---
+    marcoBusqueda = tk.LabelFrame(ventanaEliminar, text=" Buscar Donador ", padx=10, pady=10)
+    marcoBusqueda.pack(fill="x", padx=20, pady=5)
+    tk.Label(marcoBusqueda, text="Digite la cédula (#-####-####):").pack(anchor="w")
+    entradaCedula = tk.Entry(marcoBusqueda, width=35, textvariable=cedulaBuscada)
+    entradaCedula.pack(pady=2)
+    botonBuscar = ttk.Button(marcoBusqueda, text="Buscar Donador")
+    botonBuscar.pack(pady=8)
+    # --- Sección datos (solo lectura) ---
+    marcoDatos = tk.LabelFrame(ventanaEliminar, text=" Datos del Donador ", padx=10, pady=10)
+    marcoDatos.pack(fill="x", padx=20, pady=5)
+    tk.Label(marcoDatos, text="Nombre Completo:", fg="gray").pack(anchor="w")
+    campoNombre = tk.Entry(marcoDatos, width=42, textvariable=nombreDonador, state="disabled")
+    campoNombre.pack(pady=2)
+    tk.Label(marcoDatos, text="Fecha de Nacimiento:", fg="gray").pack(anchor="w")
+    campoFechaNac = tk.Entry(marcoDatos, width=42, textvariable=fechaNacDonador, state="disabled")
+    campoFechaNac.pack(pady=2)
+    tk.Label(marcoDatos, text="Sexo:", fg="gray").pack(anchor="w")
+    campoSexo = tk.Entry(marcoDatos, width=42, textvariable=sexoDonador, state="disabled")
+    campoSexo.pack(pady=2)
+    # --- Sección justificación ---
+    marcoJustificacion = tk.LabelFrame(ventanaEliminar,
+                                        text=" Justificación de Eliminación (Gemini) ",
+                                        padx=10, pady=10)
+    marcoJustificacion.pack(fill="x", padx=20, pady=5)
+    tk.Label(marcoJustificacion, text="Seleccione la razón:").pack(anchor="w")
+    justificaciones = [
+        "1. Enfermedades infecciosas o crónicas (VIH, Hepatitis, Tuberculosis, etc.)",
+        "2. Conductas de riesgo (múltiples parejas, relaciones por dinero o drogas)",
+        "3. Factores de salud física (anemia, presión inestable, fiebre reciente)",
+        "4. Procedimientos médicos recientes (cirugía, tatuajes, transfusiones)",
+        "5. Uso de medicamentos inyectables o fármacos restringidos sin receta",
+        "6. Estilo de vida o viajes a zonas endémicas (malaria, dengue)",
+        "7. Situaciones especiales (embarazo, lactancia, menstruación)"
+    ]
+#AAA
+    listaJustificacion = ttk.Combobox(marcoJustificacion, values=justificaciones,
+                                       width=50, state="disabled")
+    listaJustificacion.pack(pady=5)
+
+    # --- Botones ---
+    marcoBotones = tk.Frame(ventanaEliminar)
+    marcoBotones.pack(pady=15)
+
+    botonConfirmar = tk.Button(
+        marcoBotones, text="Confirmar Eliminación",
+        bg="#A31D1D", fg="white", font=("Arial", 10, "bold"), width=18,
+        state="disabled",
+        command=lambda: realizarEliminacionDonador(
+            ventanaEliminar, cedulaBuscada, listaJustificacion))
+    botonConfirmar.pack(side="left", padx=10)
+
+    botonRegresar = tk.Button(
+        marcoBotones, text="Regresar",
+        bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
+        command=ventanaEliminar.destroy)
+    botonRegresar.pack(side="left", padx=10)
+
+    botonBuscar.config(command=lambda: realizarBusquedaParaEliminar(
+        ventanaEliminar, cedulaBuscada, entradaCedula, botonBuscar,
+        nombreDonador, campoNombre, fechaNacDonador, campoFechaNac,
+        sexoDonador, campoSexo, listaJustificacion, botonConfirmar))
+
+    entradaCedula.focus_set()
 
 def realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, botonBuscar, nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo, listaProvincia, pesoDonador, campoPeso, listaSangre, botonConfirmar, tiposSangreOpciones, fechaNacDonador, variableSexoDonador):
     """
@@ -393,3 +516,4 @@ def iniciarPrograma():
 
 if __name__ == "__main__": # Esta linea de codigo hace que si este archivo es ejecutado directamente, se ejecute la funcion iniciarPrograma, pero si este archivo es importado como un modulo en otro archivo, no se ejecute iniciarPrograma automaticamente, lo cual es util para evitar que al importar este modulo se abra la ventana del menu principal sin querer
     iniciarPrograma() # se investigo porque el del hacer esto, lo cual hace lo del comentario de arriba
+

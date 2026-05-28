@@ -175,3 +175,10 @@ def insertarLugarDonacion(provinciaNumero, nuevoLugar):
             return False, f"El lugar '{lugarLimpio}' ya se encuentra registrado para esta provincia."
     lugaresDonacionProvincia[provinciaNumero].append(lugarLimpio)
     return True, f"'{lugarLimpio}' ha sido agregado exitosamente a la lista de centros de donación."
+def eliminarDonador(cedula, justificacion):
+    global baseDatosDonadores
+    if cedula not in baseDatosDonadores:
+        return False, f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún."
+    baseDatosDonadores[cedula][9]  = 0             # estado = inactivo
+    baseDatosDonadores[cedula][10] = justificacion  # justificación
+    return True, "Donador eliminado satisfactoriamente."
