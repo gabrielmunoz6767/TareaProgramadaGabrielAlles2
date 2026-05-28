@@ -150,7 +150,7 @@ def abrirGenerarDonadores():
 
 def abrirActualizarDonador():
     pass
-#AAA
+
 def realizarBusquedaParaEliminar(ventanaEliminar, cedulaBuscada, entradaCedula,
                                   botonBuscar, nombreDonador, campoNombre,
                                   fechaNacDonador, campoFechaNac, sexoDonador,
@@ -213,7 +213,7 @@ def abrirEliminarDonador():
     sexoDonador     = tk.StringVar()
     tk.Label(ventanaEliminar, text="Eliminar Donador",
              font=("Arial", 14, "bold")).pack(pady=10)
-    # --- Sección búsqueda ---
+    # Sección búsqueda
     marcoBusqueda = tk.LabelFrame(ventanaEliminar, text=" Buscar Donador ", padx=10, pady=10)
     marcoBusqueda.pack(fill="x", padx=20, pady=5)
     tk.Label(marcoBusqueda, text="Digite la cédula (#-####-####):").pack(anchor="w")
@@ -221,7 +221,7 @@ def abrirEliminarDonador():
     entradaCedula.pack(pady=2)
     botonBuscar = ttk.Button(marcoBusqueda, text="Buscar Donador")
     botonBuscar.pack(pady=8)
-    # --- Sección datos (solo lectura) ---
+    # Sección datos 
     marcoDatos = tk.LabelFrame(ventanaEliminar, text=" Datos del Donador ", padx=10, pady=10)
     marcoDatos.pack(fill="x", padx=20, pady=5)
     tk.Label(marcoDatos, text="Nombre Completo:", fg="gray").pack(anchor="w")
@@ -233,9 +233,8 @@ def abrirEliminarDonador():
     tk.Label(marcoDatos, text="Sexo:", fg="gray").pack(anchor="w")
     campoSexo = tk.Entry(marcoDatos, width=42, textvariable=sexoDonador, state="disabled")
     campoSexo.pack(pady=2)
-    # --- Sección justificación ---
     marcoJustificacion = tk.LabelFrame(ventanaEliminar,
-                                        text=" Justificación de Eliminación (Gemini) ",
+                                        text=" Justificación de Eliminación",
                                         padx=10, pady=10)
     marcoJustificacion.pack(fill="x", padx=20, pady=5)
     tk.Label(marcoJustificacion, text="Seleccione la razón:").pack(anchor="w")
@@ -246,14 +245,11 @@ def abrirEliminarDonador():
         "4. Procedimientos médicos recientes (cirugía, tatuajes, transfusiones)",
         "5. Uso de medicamentos inyectables o fármacos restringidos sin receta",
         "6. Estilo de vida o viajes a zonas endémicas (malaria, dengue)",
-        "7. Situaciones especiales (embarazo, lactancia, menstruación)"
-    ]
-#AAA
+        "7. Situaciones especiales (embarazo, lactancia, menstruación)"]
+
     listaJustificacion = ttk.Combobox(marcoJustificacion, values=justificaciones,
                                        width=50, state="disabled")
     listaJustificacion.pack(pady=5)
-
-    # --- Botones ---
     marcoBotones = tk.Frame(ventanaEliminar)
     marcoBotones.pack(pady=15)
 
@@ -280,7 +276,7 @@ def abrirEliminarDonador():
 
 def realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, botonBuscar, nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo, listaProvincia, pesoDonador, campoPeso, listaSangre, botonConfirmar, tiposSangreOpciones, fechaNacDonador, variableSexoDonador):
     """
-    Función  encargada de la lógica de búsqueda.
+    Función encargada de la lógica de búsqueda.
     Recibe los componentes de la interfaz como parámetros para poder interactuar con ellos.
     """
     cedulaAId = cedulaBuscada.get().strip()
@@ -297,7 +293,7 @@ def realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBusca
     botonConfirmar.config(state="normal")
     nombreDonador.set(donadorEncontrado[0])         
     telefonoDonador.set(donadorEncontrado[1])
-    correoDonador.set(donadorEncontrado[2])
+    correoDonador.set(donadorEncontrado[2])    
     try:                                             
         indiceProvincia = int(donadorEncontrado[3]) - 1   
         listaProvincia.current(indiceProvincia)
@@ -315,23 +311,24 @@ def realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBusca
 
 def realizarActualizacionDonador(ventanaActualizar, cedulaBuscada, nombreDonador, telefonoDonador, correoDonador, listaProvincia, pesoDonador, listaSangre, fechaNacDonador, variableSexoDonador):
     """
-    Funcionamiento: Recupera los datos de los campos, llama a la función de actualización y muestra el resultado.
+    Funcionamiento: Recupera los datos de las variables de control, llama a la función de 
+    actualización y muestra el resultado en pantalla.
     """
     cedulaBuscadaTexto = cedulaBuscada.get().strip() 
-    nombreDonadorTexto = nombreDonador.get()
-    telefonoDonadorTexto = telefonoDonador.get()
-    correoDonadorTexto = correoDonador.get()
-    provinciaSeleccionada = listaProvincia.get().split(".")[0]
-    pesoDonadorTexto = pesoDonador.get()
-    sangreSeleccionada = listaSangre.get()
-    fechaNacTexto = fechaNacDonador.get()
-    sexoTexto = variableSexoDonador.get()
-    exito, mensaje = fn.actualizarDatosDonador(cedulaBuscadaTexto, nombreDonadorTexto, telefonoDonadorTexto, correoDonadorTexto, provinciaSeleccionada, pesoDonadorTexto, sangreSeleccionada,fechaNacTexto, sexoTexto)
+    nombreDonadorTexto = nombreDonador.get().strip()
+    telefonoDonadorTexto = telefonoDonador.get().strip()
+    correoDonadorTexto = correoDonador.get().strip()
+    provinciaSeleccionada = listaProvincia.get().split(".")[0].strip()
+    pesoDonadorTexto = pesoDonador.get().strip()
+    sangreSeleccionada = listaSangre.get().strip()
+    fechaNacTexto = fechaNacDonador.get().strip()
+    sexoTexto = variableSexoDonador.get().strip()
+    exito, mensaje = fn.actualizarDatosDonador(cedulaBuscadaTexto, nombreDonadorTexto, telefonoDonadorTexto, correoDonadorTexto, provinciaSeleccionada, pesoDonadorTexto, sangreSeleccionada, fechaNacTexto, sexoTexto)
     if exito: 
         messagebox.showinfo("Éxito", mensaje, parent=ventanaActualizar) 
-        ventanaActualizar.destroy() 
+        ventanaActualizar.destroy()
     else: 
-        messagebox.showerror("Error", mensaje, parent=ventanaActualizar)
+        messagebox.showerror("Error de Validación", mensaje, parent=ventanaActualizar)
 
 def abrirActualizarDonador():
     """
@@ -339,9 +336,8 @@ def abrirActualizarDonador():
     """
     ventanaActualizar = tk.Toplevel()
     ventanaActualizar.title("Actualizar Datos de Donador")
-    ventanaActualizar.geometry("450x750") # Ajustamos el alto para los campos nuevos
+    ventanaActualizar.geometry("450x750") 
     ventanaActualizar.grab_set() 
-
     cedulaBuscada = tk.StringVar()
     nombreDonador = tk.StringVar()
     telefonoDonador = tk.StringVar()
@@ -403,13 +399,16 @@ def abrirActualizarDonador():
 
     botonConfirmar = ttk.Button(ventanaActualizar, text="Confirmar Cambios", state="disabled") 
     botonConfirmar.pack(pady=15, ipady=2)
-
-
     botonBuscar.config(
-        command=lambda: realizarBusquedaDonador(ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, botonBuscar,nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo,listaProvincia, pesoDonador, campoPeso, listaSangre, botonConfirmar, tiposSangreOpciones,fechaNacDonador, variableSexoDonador))
+        command=lambda: realizarBusquedaDonador(
+            ventanaActualizar, cedulaBuscada, entradaCedulaBuscar, botonBuscar,
+            nombreDonador, campoNombre, telefonoDonador, campoTelefono, correoDonador, campoCorreo,
+            listaProvincia, pesoDonador, campoPeso, listaSangre, botonConfirmar, tiposSangreOpciones,
+            fechaNacDonador, variableSexoDonador))
     botonConfirmar.config(
-        command=lambda: realizarActualizacionDonador(ventanaActualizar, cedulaBuscada, nombreDonador, telefonoDonador, correoDonador,listaProvincia, pesoDonador, listaSangre, fechaNacDonador, variableSexoDonador))
-    entradaCedulaBuscar.focus_set()
+        command=lambda: realizarActualizacionDonador(
+            ventanaActualizar, cedulaBuscada, nombreDonador, telefonoDonador, correoDonador,
+            listaProvincia, pesoDonador, listaSangre, fechaNacDonador, variableSexoDonador))
 
 def ejecutarInsercionLugar(ventanaLugar):
     """
