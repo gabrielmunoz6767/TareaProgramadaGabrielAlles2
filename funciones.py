@@ -19,18 +19,44 @@ lugaresDonacionProvincia = {
     "7": ["Hospital Tony Facio", "Hospital de Guápiles"],
     "8": ["Registro de Naturalizaciones (San José)"]}
 
-def verificarBaseDatos():
+nombreArchivoGlobal = ""
+def verificarBaseDatos(pNombreArchivo):
     """
-    Verifica si existe el archivo de base de datos persistente.
+    Verifica si existe el archivo intentando abrirlo en modo lectura ("r").
+    Si existe, lee el string del diccionario y lo reconstruye usando eval().
+    Si da FileNotFoundError, crea el archivo escribiendo un diccionario vacío "{}" en texto.
     """
+    global nombreArchivoGlobal, baseDatosDonadores
+    nombreArchivoGlobal = pNombreArchivo
     try:
-        # Intentamos abrir el archivo en modo lectura
-        archivo = open("donadores.dat", "r")
-        archivo.close() # Lo cerramos de inmediato si tuvo éxito
-        return True
+        with open(nombreArchivoGlobal, "r", encoding="utf-8") as pArchivoLectura:
+            pContenido = pArchivoLectura.read().strip()
+            if pContenido:
+                baseDatosDonadores = eval(pContenido)
+            else:
+                baseDatosDonadores = {}
+        return True 
     except FileNotFoundError:
-        # Si da este error específico, significa que el archivo no existe
-        return False
+        try:
+            with open(nombreArchivoGlobal, "w", encoding="utf-8") as pArchivoEscritura:
+                pArchivoEscritura.write("{}") # Escribe un diccionario vacío en el archivo para crear la base de datos inicial
+        except Exception:
+            pass
+        baseDatosDonadores = {}
+        return False 
+
+def guardarEnBaseDatos():
+    """
+    Guarda el estado actual del diccionario global convirtiéndolo a string plano 
+    dentro del archivo seleccionado (.py, .txt, etc.).
+    """
+    global nombreArchivoGlobal, baseDatosDonadores
+    if nombreArchivoGlobal:
+        try:
+            with open(nombreArchivoGlobal, "w", encoding="utf-8") as pArchivoEscritura:
+                pArchivoEscritura.write(str(baseDatosDonadores))
+        except Exception:
+            pass
 
 def validarCedula(cedulaTexto):
     """
@@ -113,7 +139,20 @@ def insertarNuevoDonador(cedula, nombre, fechaNac, sexo, tele, correo, provincia
             return False, "Dado su sobre peso, no es posible donar sangre."
     except ValueError:
         return False, "El peso debe ser un número válido, por ejemplo: '67.7'"
-    baseDatosDonadores[cedula] = [nombre.strip(),tele,correo.lower().strip(),provincia,pesoFlotante,sangre,[],fechaNac,sexo]
+    
+    baseDatosDonadores[cedula] = [
+        nombre.strip(),         # [0] se guarda el nombre
+        tele,                   # [1] El teléfono se guarda tal cual, sin modificar el formato, para mantener la consistencia con la validación
+        correo.lower().strip(), # [2]  se guarda el correo. en minúsculas para evitar problemas de mayúsculas en futuras búsquedas o actualizaciones
+        provincia,              # [3] se guarda la provincia tal cual
+        pesoFlotante,           # [4] se guarda el peso como flotante
+        sangre,                 # [5] se guarda el tipo de sangre
+        [],                     # [6] Historial de donaciones inicial vacío
+        fechaNac,               # [7] se guarda la fecha de nacimiento
+        sexo,                   # [8] se guarda el sexo
+        1                       # [9] Estado Inicial: 1 = Activo 
+    ]
+    guardarEnBaseDatos()
     lugares = lugaresDonacionProvincia.get(provincia, ["Centro de salud local"])
     lugaresTexto = ", ".join(lugares)
     mensajeExito = f"""Donador registrado exitosamente.
@@ -180,14 +219,13 @@ def eliminarDonador(cedula, justificacion):
     global baseDatosDonadores
     if cedula not in baseDatosDonadores:
         return False, f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún."
-    while len(baseDatosDonadores[cedula]) < 9:
-        baseDatosDonadores[cedula].append("") # Rellena datos biológicos vacíos si el donador era viejo
-    if len(baseDatosDonadores[cedula]) == 9:
-        baseDatosDonadores[cedula].append(0)  # Si no existía, lo agrega al final (0 = inactivo)
-    else:
-        baseDatosDonadores[cedula][9] = 0     # Si ya existía, lo sobreescribe
-    if len(baseDatosDonadores[cedula]) == 10:
-        baseDatosDonadores[cedula].append(justificacion) # Si no existía, la agrega al final
-    else:
-        baseDatosDonadores[cedula][10] = justificacion   # Si ya existía, la sobreescribe
-    return True, "Donador eliminado satisfactoriamente."
+    
+    # --- BORRADO FÍSICO CON .pop() ---
+    # Eliminamos por completo la cédula y su lista de datos del diccionario
+    baseDatosDonadores.pop(cedula)
+    
+    # --- ACTUALIZACIÓN DEL ARCHIVO ---
+    # Reescribimos el archivo de texto plano para que ya no tenga al usuario
+    guardarEnBaseDatos()
+    
+    return True, "Donador eliminado por completo de la base de datos satisfactoriamente."

@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import messagebox # mensajes emergentes para mostrar información o errores al usuario
 from tkinter import ttk  # se importa ttk para usar Combobox, que es una lista desplegable más moderna y estilizada
 import funciones as fn # quisimos abreviarla, puesto que poner .funciones en todo lado se hace mas largo todo
+from tkinter import simpledialog # para pedirle al usuario que ingrese datos en ventanas emergentes, como el nombre del archivo al iniciar el programa
 
 def limpiarFormularioEliminar(cedulaBuscada, nombreDonador, fechaNacDonador, sexoDonador,
                               entradaCedula, botonBuscar, campoNombre, campoFechaNac,
@@ -77,7 +78,7 @@ def abrirInsertarDonador():
     tk.Label(marcoCampos, text="Sexo:", font=("Arial", 10)).pack(anchor="w", padx=20)
     variableSexo = tk.StringVar(value="Masculino")  # Marcado por omisión como pide la imagen
     
-    marcoRadioButtons = tk.Frame(marcoCampos)
+    marcoRadioButtons = tk.Frame(marcoCampos) # botones en un marco para que queden alineados horizontalmente y con su etiqueta de "Sexo" bien posicionada
     marcoRadioButtons.pack(anchor="w", padx=20, pady=2)
     
     rbMasculino = tk.Radiobutton(marcoRadioButtons, text="Masculino", variable=variableSexo, value="Masculino", font=("Arial", 10))
@@ -141,16 +142,19 @@ def ejecutarGuardadoDonador(ventanaFormulario, campoCedula, campoNombre, campoFe
     pesoInput = campoPeso.get().strip()
     sangreInput = listaSangre.get()
     exito, mensaje = fn.insertarNuevoDonador(
-        cedulaInput, nombreInput, fechaNacInput, sexoInput, 
-        telefonoInput, correoInput, provinciaInput, pesoInput, sangreInput)
+        cedulaInput, nombreInput, fechaNacInput, sexoInput,telefonoInput, correoInput, provinciaInput, pesoInput, sangreInput)
     if exito:
         messagebox.showinfo("Operación Exitosa", mensaje, parent=ventanaFormulario)
-        ventanaFormulario.destroy()  # Cierra y regresa al menú principal
+        try:
+            btnActualizarDonador.config(state=tk.NORMAL)
+            btnEliminarDonador.config(state=tk.NORMAL)
+            btnReportes.config(state=tk.NORMAL)
+        except NameError:
+            pass # Previene caídas 
+        ventanaFormulario.grab_release() # Libera el control de eventos de forma segura
+        ventanaFormulario.destroy()      # Cierra la ventana y regresa al menú principal
     else:
         messagebox.showerror("Error de Validación", mensaje, parent=ventanaFormulario)
-    # Botón para Registrar Donador
-    botontnRegistrar = tk.Button(ventanaFormulario, text="Registrar Donador", bg="#E0631F", fg="white", font=("Arial", 11, "bold"), width=15, command=lambda: ejecutarGuardadoDonador(ventanaFormulario, campoCedula, campoNombre, campoFechaNac, variableSexo, campoTelefono, campoCorreo, listaProvincia, campoPeso, listaSangre)) # command hace que al hacer click en el boton se ejecute la funcion ejecutarGuardado, que es la que recupera los datos de los campos y llama a la funcion de insercion para guardar el nuevo donador, ademas de mostrar un mensaje al usuario con el resultado de la operacion
-    botontnRegistrar.pack(pady=20) # pady hace que el boton no quede tan pegado al ultimo campo, le da un espacio vertical
 
 def limpiarFormularioDonador(campoCedula, campoNombre, campoFechaNac, variableSexo, campoTelefono, campoCorreo, listaProvincia, campoPeso, listaSangre):
     """
@@ -519,38 +523,55 @@ def abrirReportes():
     pass
 
 def iniciarPrograma():
+    global btnActualizarDonador, btnEliminarDonador, btnReportes
     ventanaPrincipal = tk.Tk()
-    ventanaPrincipal.title("Banco de Sangre - Sistema de Información")
-    ventanaPrincipal.geometry("500x450") 
+    ventanaPrincipal.withdraw() 
     
-    existeBaseDatos = fn.verificarBaseDatos() # Aqui se verifica si existe la base de datos, lo cual segun tkinter hace que los botones puedan funcionar
-    estadoBloqueado = tk.NORMAL if existeBaseDatos else tk.DISABLED
+    nombreArchivoInput = ""
+    while not nombreArchivoInput:
+        nombreArchivoInput = simpledialog.askstring(
+            "Configuración del Sistema", 
+            "Digite el nombre del archivo de base de datos (.txt, .py, etc.):",
+            parent=ventanaPrincipal)
+        if nombreArchivoInput is None:
+            ventanaPrincipal.destroy()
+            return
+        nombreArchivoInput = nombreArchivoInput.strip()
+        if not nombreArchivoInput:
+            messagebox.showwarning("Campo Vacío", "Debe ingresar un nombre de archivo válido para continuar.")        
+    existeBaseDatos = fn.verificarBaseDatos(nombreArchivoInput)
+    
+    ventanaPrincipal.deiconify()
+    ventanaPrincipal.title("Banco de Sangre - Sistema de Información")
+    ventanaPrincipal.geometry("500x470") 
+
+    estadoBloqueoEspecial = tk.NORMAL if existeBaseDatos else tk.DISABLED
 
     lblTitulo = tk.Label(ventanaPrincipal, text="Menú Principal", font=("Arial", 16, "bold"))
     lblTitulo.pack(pady=15)
 
-    btnInsertarDonador = tk.Button(ventanaPrincipal, text="1. Insertar donador", width=35, command=abrirInsertarDonador) # command hace que al hacer click en el boton se ejecute la funcion abrirInsertarDonador, que es la que crea la ventana para insertar un nuevo donador
+    btnInsertarDonador = tk.Button(ventanaPrincipal, text="1. Insertar donador", width=35, command=abrirInsertarDonador)
     btnInsertarDonador.pack(pady=5)
 
     btnGenerarDonadores = tk.Button(ventanaPrincipal, text="2. Generar donadores", width=35, command=abrirGenerarDonadores)
     btnGenerarDonadores.pack(pady=5)
 
-    btnActualizarDonador = tk.Button(ventanaPrincipal, text="3. Actualizar datos del donador", width=35,  command=abrirActualizarDonador)
+    btnActualizarDonador = tk.Button(ventanaPrincipal, text="3. Actualizar datos del donador", width=35, state=estadoBloqueoEspecial, command=abrirActualizarDonador)
     btnActualizarDonador.pack(pady=5)
 
-    btnEliminarDonador = tk.Button(ventanaPrincipal, text="4. Eliminar donador", width=35, command=abrirEliminarDonador)
+    btnEliminarDonador = tk.Button(ventanaPrincipal, text="4. Eliminar donador", width=35, state=estadoBloqueoEspecial, command=abrirEliminarDonador)
     btnEliminarDonador.pack(pady=5)
 
     btnInsertarLugar = tk.Button(ventanaPrincipal, text="5. Insertar lugar de donación por provincia", width=35, command=abrirInsertarLugar)
     btnInsertarLugar.pack(pady=5)
 
-    btnReportes = tk.Button(ventanaPrincipal, text="6. Reportes", width=35,  command=abrirReportes)
+    btnReportes = tk.Button(ventanaPrincipal, text="6. Reportes", width=35, state=estadoBloqueoEspecial, command=abrirReportes)
     btnReportes.pack(pady=5)
 
-    btnSalir = tk.Button(ventanaPrincipal, text="7. Salir", width=35, command=ventanaPrincipal.quit) # por ejemplo, el command de aqui hace que al hacer click en el boton se ejecute la funcion quit de la ventana principal, lo que hace que se cierre el programa
+    btnSalir = tk.Button(ventanaPrincipal, text="7. Salir", width=35, command=ventanaPrincipal.quit)
     btnSalir.pack(pady=15)
-
-    ventanaPrincipal.mainloop() #  esto hace que la ventana se mantenga siempre abierta
+    
+    ventanaPrincipal.mainloop()
 
 if __name__ == "__main__": # Esta linea de codigo hace que si este archivo es ejecutado directamente, se ejecute la funcion iniciarPrograma, pero si este archivo es importado como un modulo en otro archivo, no se ejecute iniciarPrograma automaticamente, lo cual es util para evitar que al importar este modulo se abra la ventana del menu principal sin querer
     iniciarPrograma() # se investigo porque el del hacer esto, lo cual hace lo del comentario de arriba
