@@ -170,9 +170,77 @@ def limpiarFormularioDonador(campoCedula, campoNombre, campoFechaNac, variableSe
     campoPeso.delete(0, tk.END)
     listaSangre.current(0) # current(0) hace que se seleccione la primera opcion de la lista desplegable
 
-def abrirGenerarDonadores():
-    pass # esto es nuevo, esta palabra lo que hace es que no se caiga el codigo, puesto que intentara correr una funcion que todavia no esta implementada
+def ejecutarGeneracionDonadores(ventanaGenerar, campoCantidad):
+    """
+    Lee la cantidad ingresada, llama a generarDonadores y muestra el resumen.
+    """
+    cantidadTexto = campoCantidad.get().strip()
+    try:
+        cantidad = int(cantidadTexto)
+        if cantidad <= 0:
+            messagebox.showerror("Error de Validación",
+                "La cantidad debe ser un número entero mayor a 0.",
+                parent=ventanaGenerar)
+            return
+    except ValueError:
+        messagebox.showerror("Error de Validación",
+            "Debe ingresar un número entero válido.",
+            parent=ventanaGenerar)
+        return
+    exitosos, rechazados, mensaje = fn.generarDonadores(cantidad)
+    messagebox.showinfo("Generación Completada", mensaje, parent=ventanaGenerar)
+    # Habilita los botones del menú principal si estaban bloqueados
+    try:
+        btnActualizarDonador.config(state=tk.NORMAL)
+        btnEliminarDonador.config(state=tk.NORMAL)
+        btnReportes.config(state=tk.NORMAL)
+    except NameError:
+        pass
 
+    ventanaGenerar.destroy()
+
+
+def abrirGenerarDonadores():
+    """
+    Crea la subventana para generar donadores aleatoriamente.
+    """
+    ventanaGenerar = tk.Toplevel()
+    ventanaGenerar.title("Generar Donadores")
+    ventanaGenerar.geometry("400x280")
+    ventanaGenerar.grab_set()
+    tk.Label(ventanaGenerar, text="Generar Donadores",
+             font=("Arial", 14, "bold")).pack(pady=15)
+    marcoContenido = tk.LabelFrame(ventanaGenerar,
+                                    text=" Parámetros de Generación ",
+                                    padx=15, pady=15)
+    marcoContenido.pack(fill="x", padx=20, pady=5)
+    tk.Label(marcoContenido,
+             text="¿Cuántos donadores desea generar?",
+             font=("Arial", 10)).pack(anchor="w")
+    tk.Label(marcoContenido,
+             text="(Debe ser un número mayor a 0)",
+             font=("Arial", 9), fg="gray").pack(anchor="w")
+    campoCantidad = tk.Entry(marcoContenido, width=20, font=("Arial", 11))
+    campoCantidad.pack(pady=8, anchor="w")
+    tk.Label(marcoContenido,
+             text="Nota: Se generarán datos aleatorios. Algunos donadores\n"
+                  "pueden quedar como no aptos según los requisitos.",
+             font=("Arial", 9), fg="gray", justify="left").pack(anchor="w")
+    marcoBotones = tk.Frame(ventanaGenerar)
+    marcoBotones.pack(pady=20)
+    tk.Button(
+        marcoBotones, text="Generar",
+        bg="#E0631F", fg="white", font=("Arial", 10, "bold"), width=12,
+        command=lambda: ejecutarGeneracionDonadores(ventanaGenerar, campoCantidad)
+    ).pack(side="left", padx=10)
+    tk.Button(
+        marcoBotones, text="Regresar",
+        bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
+        command=ventanaGenerar.destroy
+    ).pack(side="left", padx=10)
+    campoCantidad.focus_set()
+    ventanaGenerar.bind("<Return>",
+        lambda e: ejecutarGeneracionDonadores(ventanaGenerar, campoCantidad))
 def abrirActualizarDonador():
     pass
 
@@ -520,7 +588,36 @@ def abrirInsertarLugar():
     ventanaLugar.campoNuevoLugar.focus_set()
 
 def abrirReportes():
-    pass
+    """
+    Ventana principal de reportes con botones para cada sub-reporte.
+    """
+    ventanaReportes = tk.Toplevel()
+    ventanaReportes.title("Reportes")
+    ventanaReportes.geometry("400x500")
+    ventanaReportes.grab_set()
+
+    tk.Label(ventanaReportes, text="Reportes",
+             font=("Arial", 16, "bold")).pack(pady=15)
+
+    botones = [
+        ("1. Donantes por provincia",         lambda: fn.abrirReportePorProvincia(ventanaReportes)),
+        ("2. Por rango de edad",               lambda: fn.abrirReportePorRangoEdad(ventanaReportes)),
+        ("3. Por tipo de sangre y provincia",  lambda: None),
+        ("4. Lista completa de donadores",     lambda: None),
+        ("5. Mujeres donantes O-",             lambda: None),
+        ("6. ¿A quién puede donar?",           lambda: None),
+        ("7. ¿De quién puede recibir?",        lambda: None),
+        ("8. Donantes no activos",             lambda: None),
+        ("9. Lugares de donación",             lambda: None),
+    ]
+
+    for texto, comando in botones:
+        tk.Button(ventanaReportes, text=texto, width=35,
+                  command=comando).pack(pady=3)
+
+    tk.Button(ventanaReportes, text="Regresar",
+              bg="#A31D1D", fg="white", font=("Arial", 10, "bold"), width=35,
+              command=ventanaReportes.destroy).pack(pady=15)
 
 def iniciarPrograma():
     global btnActualizarDonador, btnEliminarDonador, btnReportes
@@ -575,4 +672,3 @@ def iniciarPrograma():
 
 if __name__ == "__main__": # Esta linea de codigo hace que si este archivo es ejecutado directamente, se ejecute la funcion iniciarPrograma, pero si este archivo es importado como un modulo en otro archivo, no se ejecute iniciarPrograma automaticamente, lo cual es util para evitar que al importar este modulo se abra la ventana del menu principal sin querer
     iniciarPrograma() # se investigo porque el del hacer esto, lo cual hace lo del comentario de arriba
-

@@ -4,6 +4,7 @@
 # hora de ultima actualizacion: 
 
 # LIBRERIAS IMPORTACION
+import random
 import re
 from datetime import datetime
 
@@ -229,3 +230,99 @@ def eliminarDonador(cedula, justificacion):
     guardarEnBaseDatos()
     
     return True, "Donador eliminado por completo de la base de datos satisfactoriamente."
+TIPOS_SANGRE = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
+
+def generarDonadores(cantidad):
+    """
+    Registra múltiples donadores de forma automática en la base de datos.
+    entrada: cantidad (int): Cuántos donadores generar
+    salida: (exitosos, rechazados, mensaje)
+    """
+    global baseDatosDonadores
+    nombresHombre = ["Felipe", "Luis", "Andres", "Jose", "Gabriel",
+                     "Alessandro", "Jorge", "Daniel", "Ricardo", "Eduardo"]
+    nombresMujer  = ["Maria", "Ana", "Laura", "Sofia", "Valeria",
+                     "Daniela", "Lucia", "Camila", "Natalia", "Paola"]
+    apellidos     = ["Arias", "Alfaro", "Mora", "Jimenez", "Vargas",
+                     "Hernandez", "Rojas", "Gomez", "Castro", "Brenes"]
+    dominios      = ["gmail.com", "costarricense.cr", "racsa.go.cr", "ccss.sa.cr"]
+    primerosDigitos = [2, 4, 6, 7, 8, 9]
+    exitosos   = 0
+    rechazados = 0
+    registradas = 0
+    while registradas < cantidad:
+        #  Cédula única 
+        while True:
+            provincia   = random.randint(1, 8)
+            parte1      = random.randint(1000, 9999)
+            parte2      = random.randint(1000, 9999)
+            cedula      = f"{provincia}-{parte1}-{parte2}"
+            if cedula not in baseDatosDonadores:
+                break
+        #  Nombre 
+        esHombre = random.choice([True, False])
+        if esHombre:
+            nombre = random.choice(nombresHombre)
+            sexo   = "Masculino"
+        else:
+            nombre = random.choice(nombresMujer)
+            sexo   = "Femenino"
+        apellido1      = random.choice(apellidos)
+        apellido2      = random.choice(apellidos)
+        nombreCompleto = f"{nombre} {apellido1} {apellido2}"
+        #Teléfono
+        primero     = random.choice(primerosDigitos)
+        resto       = random.randint(0, 9999999)
+        telCompleto = f"{primero}{resto:07d}"
+        telefono    = f"{telCompleto[:4]}-{telCompleto[4:]}"
+        #Correo
+        correo = f"{nombre.lower()}{random.randint(1, 999)}@{random.choice(dominios)}"
+        #  Fecha: 70% mayores de edad, 30% menores ---
+        if random.random() < 0.70:
+            anno = random.randint(1950, 2007)
+        else:
+            anno = random.randint(2010, 2025)
+        mes   = random.randint(1, 12)
+        dia   = random.randint(1, 28)
+        fecha = f"{dia:02d}/{mes:02d}/{anno}"
+        #  Peso: 80% válido, 20% inválido 
+        if random.random() < 0.80:
+            peso = round(random.uniform(50.1, 119.9), 1)
+        else:
+            peso = round(random.choice([
+                random.uniform(20.0, 49.9),
+                random.uniform(121.0, 150.0)
+            ]), 1)
+        # --- Tipo de sangre desde la tupla global ---
+        sangre    = random.choice(TIPOS_SANGRE)
+        provinciaTxt = str(random.randint(1, 8))
+        # --- Determina si es apto ---
+        esAptoEdad, _ = validarFechaNacimiento(fecha)
+        esAptoPeso    = 50 < peso < 120
+        if esAptoEdad and esAptoPeso:
+            estado = 1
+            exitosos += 1
+        else:
+            estado = 0
+            rechazados += 1
+        # --- Guarda con la misma estructura de insertarNuevoDonador ---
+        baseDatosDonadores[cedula] = [
+            nombreCompleto,  # [0]
+            telefono,        # [1]
+            correo,          # [2]
+            provinciaTxt,    # [3]
+            peso,            # [4]
+            sangre,          # [5]
+            [],              # [6] historial
+            fecha,           # [7]
+            sexo,            # [8]
+            estado           # [9]
+        ]
+        registradas += 1
+    guardarEnBaseDatos()
+    mensaje = (f"Generación completada.\n\n"
+               f"Donadores aptos registrados: {exitosos}\n"
+               f"Donadores no aptos registrados: {rechazados}\n"
+               f"────────────────────────\n"
+               f"Total generados: {registradas}")
+    return exitosos, rechazados, mensaje
