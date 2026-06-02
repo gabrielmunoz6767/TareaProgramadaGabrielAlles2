@@ -806,6 +806,40 @@ def abrirReporteQuienPuedeDonar(ventanaReportes):
               font=("Arial", 10, "bold"), width=12,
               command=ventanaDonor.destroy).pack(side="left", padx=10)
 
+def abrirReporteQuienPuedeRecibir(ventanaReportes):
+    ventanaRecibir = tk.Toplevel()
+    ventanaRecibir.title("Reporte: ¿De quién puede recibir?")
+    ventanaRecibir.geometry("380x200")
+    ventanaRecibir.grab_set()
+
+    tk.Label(ventanaRecibir, text="¿De quién puede recibir?",
+             font=("Arial", 13, "bold")).pack(pady=12)
+
+    marcoContenido = tk.LabelFrame(ventanaRecibir, text=" Tipo de Sangre ",
+                                    padx=15, pady=15)
+    marcoContenido.pack(fill="x", padx=20, pady=5)
+
+    listaSangre = ttk.Combobox(marcoContenido, values=list(fn.TIPOS_SANGRE),
+                                width=15, state="readonly")
+    listaSangre.current(0)
+    listaSangre.pack(anchor="w", pady=2)
+
+    marcoBotones = tk.Frame(ventanaRecibir)
+    marcoBotones.pack(pady=12)
+
+    def generarReporte():
+        exito, mensaje = fn.generarReporteQuienPuedeRecibir(listaSangre.get())
+        if exito:
+            messagebox.showinfo("Reporte", mensaje, parent=ventanaRecibir)
+        else:
+            messagebox.showerror("Reporte", mensaje, parent=ventanaRecibir)
+
+    tk.Button(marcoBotones, text="Generar reporte", bg="#E0631F", fg="white",
+              font=("Arial", 10, "bold"), width=15, command=generarReporte).pack(side="left", padx=10)
+    tk.Button(marcoBotones, text="Regresar", bg="#7D7D7D", fg="white",
+              font=("Arial", 10, "bold"), width=12,
+              command=ventanaRecibir.destroy).pack(side="left", padx=10)
+    
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.

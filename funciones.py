@@ -648,3 +648,47 @@ def generarReporteQuienPuedeDonar(tipoSangre):
         return True, f"Reporte creado satisfactoriamente.\nArchivo: {nombreArchivo}"
     except Exception as e:
         return False, f"Reporte no creado. Error: {str(e)}"
+
+def generarReporteQuienPuedeRecibir(tipoSangre):
+    """
+    Genera reporte HTML de donantes de quienes puede recibir ese tipo de sangre,
+    agrupados por provincia descendentemente.
+    """
+    global baseDatosDonadores
+    nombresProvincia = {
+        "1": "San José", "2": "Alajuela", "3": "Cartago",
+        "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas",
+        "7": "Limón", "8": "Naturalizado"
+    }
+    compatibles = PuedeRecibir.get(tipoSangre, [])
+    lista = []
+    for cedula, datos in baseDatosDonadores.items():
+        if datos[5] in compatibles and datos[9] == 1:
+            lista.append((cedula, datos))
+    if not lista:
+        return False, "Reporte no creado. No hay donantes compatibles."
+    lista.sort(key=lambda x: x[1][3], reverse=True) # descendente por provincia
+    fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    filas = ""
+    for cedula, datos in lista:
+        nombreProv = nombresProvincia.get(datos[3], "Desconocida")
+        filas += f"<tr><td>{cedula}</td><td>{datos[0]}</td><td>{datos[5]}</td><td>{datos[1]}</td><td>{datos[2]}</td><td>{nombreProv}</td></tr>"
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>De quien puede recibir</title></head>
+<body>
+<h2>Reporte: ¿De quién puede recibir el tipo {tipoSangre}?</h2>
+<p>Generado el: {fechaHora}</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Cedula</th><th>Nombre Completo</th><th>Tipo Sangre</th><th>Telefono</th><th>Correo</th><th>Provincia</th></tr>
+{filas}
+</table>
+</body>
+</html>"""
+    try:
+        nombreArchivo = f"reporte_puede_recibir_{tipoSangre.replace('+','pos').replace('-','neg')}.html"
+        with open(nombreArchivo, "w", encoding="utf-8") as archivo:
+            archivo.write(html)
+        return True, f"Reporte creado satisfactoriamente.\nArchivo: {nombreArchivo}"
+    except Exception as e:
+        return False, f"Reporte no creado. Error: {str(e)}"
