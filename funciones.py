@@ -692,3 +692,39 @@ def generarReporteQuienPuedeRecibir(tipoSangre):
         return True, f"Reporte creado satisfactoriamente.\nArchivo: {nombreArchivo}"
     except Exception as e:
         return False, f"Reporte no creado. Error: {str(e)}"
+
+def generarReporteDonantesNoActivos():
+    """
+    Genera reporte HTML de todos los donantes inactivos con justificación completa.
+    """
+    global baseDatosDonadores
+    lista = []
+    for cedula, datos in baseDatosDonadores.items():
+        if datos[9] == 0:
+            lista.append((cedula, datos))
+    if not lista:
+        return False, "Reporte no creado. No hay donantes inactivos en el sistema."
+    fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    filas = ""
+    for cedula, datos in lista:
+        justIndice = datos[10] if len(datos) > 10 else 0
+        justTexto = TEXTOS_JUSTIFICACION.get(justIndice, "No especificada")
+        filas += f"<tr><td>{justTexto}</td><td>{cedula}</td><td>{datos[0]}</td><td>{datos[5]}</td><td>{datos[7]}</td><td>{datos[4]}</td><td>{datos[8]}</td><td>{datos[1]}</td><td>{datos[2]}</td></tr>"
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Donantes No Activos</title></head>
+<body>
+<h2>Reporte: Donantes No Activos</h2>
+<p>Generado el: {fechaHora}</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Justificacion</th><th>Cedula</th><th>Nombre Completo</th><th>Tipo Sangre</th><th>Fecha Nacimiento</th><th>Peso</th><th>Sexo</th><th>Telefono</th><th>Correo</th></tr>
+{filas}
+</table>
+</body>
+</html>"""
+    try:
+        with open("reporte_no_activos.html", "w", encoding="utf-8") as archivo:
+            archivo.write(html)
+        return True, "Reporte creado satisfactoriamente.\nArchivo: reporte_no_activos.html"
+    except Exception as e:
+        return False, f"Reporte no creado. Error: {str(e)}"

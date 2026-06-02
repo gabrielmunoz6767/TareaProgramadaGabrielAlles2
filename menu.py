@@ -839,7 +839,14 @@ def abrirReporteQuienPuedeRecibir(ventanaReportes):
     tk.Button(marcoBotones, text="Regresar", bg="#7D7D7D", fg="white",
               font=("Arial", 10, "bold"), width=12,
               command=ventanaRecibir.destroy).pack(side="left", padx=10)
-    
+
+def abrirReporteDonantesNoActivos(ventanaReportes):
+    exito, mensaje = fn.generarReporteDonantesNoActivos()
+    if exito:
+        messagebox.showinfo("Reporte", mensaje, parent=ventanaReportes)
+    else:
+        messagebox.showerror("Reporte", mensaje, parent=ventanaReportes)
+
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.
