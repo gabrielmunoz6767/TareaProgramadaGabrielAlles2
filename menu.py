@@ -763,6 +763,15 @@ def abrirReporteListaCompleta(ventanaReportes):
     else:
         messagebox.showerror("Reporte", mensaje, parent=ventanaReportes)
 
+
+def abrirReporteMujeresONegativo(ventanaReportes):
+    exito, mensaje = fn.generarReporteMujeresONegativo()
+    if exito:
+        messagebox.showinfo("Reporte", mensaje, parent=ventanaReportes)
+    else:
+        messagebox.showerror("Reporte", mensaje, parent=ventanaReportes)
+
+
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.

@@ -521,3 +521,75 @@ def generarReporteListaCompleta():
     except Exception as e:
         return False, f"Reporte no creado. Error: {str(e)}"
 
+def generarReporteMujeresONegativo():
+    """
+    Genera reporte HTML de mujeres donantes O-, menores de 45 años, ordenadas por edad.
+    """
+    global baseDatosDonadores
+    annoActual = 2026
+    mesActual = 5
+
+    def calcularEdad(fechaNac):
+        try:
+            dia, mes, anno = map(int, fechaNac.split("/"))
+            edad = annoActual - anno
+            if mesActual < mes:
+                edad -= 1
+            return edad
+        except:
+            return -1
+
+    lista = []
+    for cedula, datos in baseDatosDonadores.items():
+        if datos[8] == "Femenino" and datos[5] == "O-" and datos[9] == 1:
+            edad = calcularEdad(datos[7])
+            if 0 <= edad < 45:
+                lista.append((cedula, datos, edad))
+    if not lista:
+        return False, "Reporte no creado. No hay mujeres donantes O- menores de 45 años."
+    lista.sort(key=lambda x: x[2]) # ordena por edad
+    fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    filas = ""
+    for cedula, datos, edad in lista:
+        filas += f"<tr><td>{cedula}</td><td>{datos[0]}</td><td>{datos[7]}</td><td>{datos[1]}</td><td>{datos[2]}</td></tr>"
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Mujeres Donantes O-</title></head>
+<body>
+<h2>Reporte: Mujeres Donantes O-</h2>
+<p>Ordenadas por edad, menores de 45 años.</p>
+<p>Generado el: {fechaHora}</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Cedula</th><th>Nombre Completo</th><th>Fecha Nacimiento</th><th>Telefono</th><th>Correo</th></tr>
+{filas}
+</table>
+</body>
+</html>"""
+    try:
+        with open("reporte_mujeres_O_negativo.html", "w", encoding="utf-8") as archivo:
+            archivo.write(html)
+        return True, "Reporte creado satisfactoriamente.\nArchivo: reporte_mujeres_O_negativo.html"
+    except Exception as e:
+        return False, f"Reporte no creado. Error: {str(e)}"
+
+tipoSangreDonacion = {
+    "O-":  ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+    "O+":  ["O+", "A+", "B+", "AB+"],
+    "A-":  ["A-", "A+", "AB-", "AB+"],
+    "A+":  ["A+", "AB+"],
+    "B-":  ["B-", "B+", "AB-", "AB+"],
+    "B+":  ["B+", "AB+"],
+    "AB-": ["AB-", "AB+"],
+    "AB+": ["AB+"],
+}
+
+PuedeRecibir = {
+    "O-":  ["O-"],
+    "O+":  ["O-", "O+"],
+    "A-":  ["O-", "A-"],
+    "A+":  ["O-", "O+", "A-", "A+"],
+    "B-":  ["O-", "B-"],
+    "B+":  ["O-", "O+", "B-", "B+"],
+    "AB-": ["O-", "A-", "B-", "AB-"],
+    "AB+": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+}
