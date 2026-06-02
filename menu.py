@@ -62,7 +62,7 @@ def abrirInsertarDonador():
     campoNombre = tk.Entry(marcoCampos, width=45)
     campoNombre.pack(pady=2, padx=20)
 
-    # Campo NUEVO: Fecha de Nacimiento
+    # Campo : Fecha de Nacimiento
     tk.Label(marcoCampos, text="Fecha de Nacimiento (DD/MM/AAAA):", font=("Arial", 10)).pack(anchor="w", padx=20)
     campoFechaNac = tk.Entry(marcoCampos, width=45)
     campoFechaNac.pack(pady=2, padx=20)
@@ -74,9 +74,9 @@ def abrirInsertarDonador():
     listaSangre.current(0)
     listaSangre.pack(pady=2, padx=20)
 
-    # Campo NUEVO: Sexo (Radio Buttons)
+    # Campo : Sexo 
     tk.Label(marcoCampos, text="Sexo:", font=("Arial", 10)).pack(anchor="w", padx=20)
-    variableSexo = tk.StringVar(value="Masculino")  # Marcado por omisión como pide la imagen
+    variableSexo = tk.StringVar(value="Masculino")  # Marcado por omisión n
     
     marcoRadioButtons = tk.Frame(marcoCampos) # botones en un marco para que queden alineados horizontalmente y con su etiqueta de "Sexo" bien posicionada
     marcoRadioButtons.pack(anchor="w", padx=20, pady=2)
@@ -620,7 +620,7 @@ def abrirReportePorProvincia(ventanaReportes):
             messagebox.showerror("Reporte", mensaje, parent=ventanaProv)
 
     tk.Button(marcoBotones, text="Generar reporte",
-              bg="#E0631F", fg="white", font=("Arial", 10, "bold"), width=15,
+              bg="#938781", fg="white", font=("Arial", 10, "bold"), width=15,
               command=generarReporte).pack(side="left", padx=10)
 
     tk.Button(marcoBotones, text="Regresar",
@@ -852,6 +852,7 @@ def abrirReporteLugaresDonacion(ventanaReportes):
         messagebox.showinfo("Reporte", mensaje, parent=ventanaReportes)
     else:
         messagebox.showerror("Reporte", mensaje, parent=ventanaReportes)    
+
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.
@@ -933,11 +934,11 @@ def iniciarPrograma():
     btnReportes = tk.Button(ventanaPrincipal, text="6. Reportes", width=35, state=estadoBloqueoEspecial, command=abrirReportes)
     btnReportes.pack(pady=5)
 
-    def salirPrograma():                                                          # <-- agregás esto
+    def salirPrograma():                                                          
         messagebox.showinfo("Hasta pronto", "Donar sangre, es donar vida")
         ventanaPrincipal.quit()
 
-    btnSalir = tk.Button(ventanaPrincipal, text="7. Salir", width=35, command=salirPrograma)  # <-- cambiás esto
+    btnSalir = tk.Button(ventanaPrincipal, text="7. Salir", width=35, command=salirPrograma)  
     btnSalir.pack(pady=15)
     
     ventanaPrincipal.mainloop()

@@ -8,7 +8,6 @@ import random
 import re
 from datetime import datetime
 
-# Esta parte es en donde se guardaran los datos, se instalo la bibloteca os para verificar que si existan los datos en el archivo.xs
 baseDatosDonadores = {}
 lugaresDonacionProvincia = {
     "1": ["Hospital México", "Hospital San Juan de Dios", "El Banco Nacional de Sangre"],
@@ -19,8 +18,8 @@ lugaresDonacionProvincia = {
     "6": ["Hospital Monseñor Sanabria"],
     "7": ["Hospital Tony Facio", "Hospital de Guápiles"],
     "8": ["Registro de Naturalizaciones (San José)"]}
-
 nombreArchivoGlobal = ""
+
 def verificarBaseDatos(pNombreArchivo):
     """
     Verifica si existe el archivo intentando abrirlo en modo lectura ("r").
@@ -39,8 +38,8 @@ def verificarBaseDatos(pNombreArchivo):
         return True 
     except FileNotFoundError:
         try:
-            with open(nombreArchivoGlobal, "w", encoding="utf-8") as pArchivoEscritura:
-                pArchivoEscritura.write("{}") # Escribe un diccionario vacío en el archivo para crear la base de datos inicial
+            with open(nombreArchivoGlobal, "w", encoding="utf-8") as archivoLectura:
+                archivoLectura.write("{}") # Escribe un diccionario vacío en el archivo para crear la base de datos inicial
         except Exception:
             pass
         baseDatosDonadores = {}
@@ -48,14 +47,27 @@ def verificarBaseDatos(pNombreArchivo):
 
 def guardarEnBaseDatos():
     """
-    Guarda el estado actual del diccionario global convirtiéndolo a string plano 
-    dentro del archivo seleccionado (.py, .txt, etc.).
+    Guarda el estado actual del diccionario global formateando el texto hacia abajo
+    para que sea perfectamente legible y ordenado en el archivo (.txt, .py, etc.).
     """
     global nombreArchivoGlobal, baseDatosDonadores
     if nombreArchivoGlobal:
         try:
-            with open(nombreArchivoGlobal, "w", encoding="utf-8") as pArchivoEscritura:
-                pArchivoEscritura.write(str(baseDatosDonadores))
+            with open(nombreArchivoGlobal, "w", encoding="utf-8") as archivoLectura:
+                if not baseDatosDonadores:
+                    archivoLectura.write("{}")
+                    return
+                textoFormateado = "{\n"
+                elementos = list(baseDatosDonadores.items())
+                for i in range(len(elementos)):
+                    cedula, datos = elementos[i]            
+                    textoFormateado += f"    '{cedula}': {str(datos)}"
+                    if i < len(elementos) - 1:
+                        textoFormateado += ",\n"
+                    else:
+                        textoFormateado += "\n"
+                textoFormateado += "}"
+                archivoLectura.write(textoFormateado)
         except Exception:
             pass
 
@@ -174,7 +186,7 @@ def buscarDonadorPorCedula(cedulaTexto):
         return baseDatosDonadores[cedulaTexto]
     return None
 
-def actualizarDatosDonador(cedula, nombre, tele, correo, provincia, peso, sangre):
+def actualizarDatosDonador(cedula, nombre, tele, correo, provincia, peso, sangre, fechaNac, sexo):
     """
     Funcionamiento: Valida y actualiza los datos de un donador existente manteniendo el historial.
     """
@@ -195,9 +207,22 @@ def actualizarDatosDonador(cedula, nombre, tele, correo, provincia, peso, sangre
             return False, "Dado su sobre peso, no es posible donar sangre."
     except ValueError:
         return False, "El peso debe ser un número valido por ejemplo: '67.7'"
-        
     historialPrevio = baseDatosDonadores[cedula][6]
-    baseDatosDonadores[cedula] = [ nombre.strip(),tele,correo.lower().strip(),provincia,pesoFlotante,sangre,historialPrevio]
+    estadoPrevio = baseDatosDonadores[cedula][9] if len(baseDatosDonadores[cedula]) > 9 else 1
+    baseDatosDonadores[cedula] = [
+        nombre.strip(),          # [0]
+        tele,                    # [1]
+        correo.lower().strip(),  # [2]
+        provincia,               # [3]
+        pesoFlotante,            # [4]
+        sangre,                  # [5]
+        historialPrevio,         # [6]
+        fechaNac,                # [7]
+        sexo,                    # [8]
+        estadoPrevio             # [9]
+    ]
+    guardarEnBaseDatos()
+    
     return True, "Usted posee un peso adecuado, correcto para ser donador de sangre.\n\nLos datos del donador han sido actualizados exitosamente."
 
 def insertarLugarDonacion(provinciaNumero, nuevoLugar):
@@ -219,14 +244,8 @@ def insertarLugarDonacion(provinciaNumero, nuevoLugar):
 def eliminarDonador(cedula, justificacion):
     global baseDatosDonadores
     if cedula not in baseDatosDonadores:
-        return False, f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún."
-    
-    # --- BORRADO FÍSICO CON .pop() ---
-    # Eliminamos por completo la cédula y su lista de datos del diccionario
+        return False, f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún."    
     baseDatosDonadores.pop(cedula)
-    
-    # --- ACTUALIZACIÓN DEL ARCHIVO ---
-    # Reescribimos el archivo de texto plano para que ya no tenga al usuario
     guardarEnBaseDatos()
     
     return True, "Donador eliminado por completo de la base de datos satisfactoriamente."
@@ -239,6 +258,7 @@ def generarDonadores(cantidad):
     salida: (exitosos, rechazados, mensaje)
     """
     global baseDatosDonadores
+    pTiposSangreValidos = ("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
     nombresHombre = ["Felipe", "Luis", "Andres", "Jose", "Gabriel",
                      "Alessandro", "Jorge", "Daniel", "Ricardo", "Eduardo"]
     nombresMujer  = ["Maria", "Ana", "Laura", "Sofia", "Valeria",
@@ -251,7 +271,7 @@ def generarDonadores(cantidad):
     rechazados = 0
     registradas = 0
     while registradas < cantidad:
-        #  Cédula única 
+        # Cédula única 
         while True:
             provincia   = random.randint(1, 8)
             parte1      = random.randint(1000, 9999)
@@ -259,7 +279,7 @@ def generarDonadores(cantidad):
             cedula      = f"{provincia}-{parte1}-{parte2}"
             if cedula not in baseDatosDonadores:
                 break
-        #  Nombre 
+        # Nombre 
         esHombre = random.choice([True, False])
         if esHombre:
             nombre = random.choice(nombresHombre)
@@ -270,14 +290,14 @@ def generarDonadores(cantidad):
         apellido1      = random.choice(apellidos)
         apellido2      = random.choice(apellidos)
         nombreCompleto = f"{nombre} {apellido1} {apellido2}"
-        #Teléfono
+        # Teléfono
         primero     = random.choice(primerosDigitos)
         resto       = random.randint(0, 9999999)
         telCompleto = f"{primero}{resto:07d}"
         telefono    = f"{telCompleto[:4]}-{telCompleto[4:]}"
-        #Correo
+        # Correo
         correo = f"{nombre.lower()}{random.randint(1, 999)}@{random.choice(dominios)}"
-        #  Fecha: 70% mayores de edad, 30% menores ---
+        # Fecha: 70% mayores de edad, 30% menores de edad 
         if random.random() < 0.70:
             anno = random.randint(1950, 2007)
         else:
@@ -285,7 +305,7 @@ def generarDonadores(cantidad):
         mes   = random.randint(1, 12)
         dia   = random.randint(1, 28)
         fecha = f"{dia:02d}/{mes:02d}/{anno}"
-        #  Peso: 80% válido, 20% inválido 
+        # Peso: 80% válido, 20% inválido 
         if random.random() < 0.80:
             peso = round(random.uniform(50.1, 119.9), 1)
         else:
@@ -293,19 +313,16 @@ def generarDonadores(cantidad):
                 random.uniform(20.0, 49.9),
                 random.uniform(121.0, 150.0)
             ]), 1)
-        # --- Tipo de sangre desde la tupla global ---
-        sangre    = random.choice(TIPOS_SANGRE)
+        sangre    = random.choice(pTiposSangreValidos)
         provinciaTxt = str(random.randint(1, 8))
-        # --- Determina si es apto ---
         esAptoEdad, _ = validarFechaNacimiento(fecha)
-        esAptoPeso    = 50 < peso < 120
+        esAptoPeso    = 50 <= peso <= 120 # Ajustado para incluir límites exactos
         if esAptoEdad and esAptoPeso:
             estado = 1
             exitosos += 1
         else:
             estado = 0
             rechazados += 1
-        # --- Guarda con la misma estructura de insertarNuevoDonador ---
         baseDatosDonadores[cedula] = [
             nombreCompleto,  # [0]
             telefono,        # [1]
@@ -321,11 +338,13 @@ def generarDonadores(cantidad):
         registradas += 1
     guardarEnBaseDatos()
     mensaje = (f"Generación completada.\n\n"
+               f"Donadores ya respaldados en el archivo: {nombreArchivoGlobal}\n"
                f"Donadores aptos registrados: {exitosos}\n"
                f"Donadores no aptos registrados: {rechazados}\n"
                f"────────────────────────\n"
                f"Total generados: {registradas}")
     return exitosos, rechazados, mensaje
+
 def generarReporteDonantesProvinicia(provinciaNúmero):
     """
     Genera un reporte HTML de donantes activos de una provincia, ordenados por nombre.
@@ -393,7 +412,6 @@ def generarReportePorRangoEdad(edadInicial, edadFinal=None):
             return edad
         except:
             return -1
-
     lista = []
     for cedula, datos in baseDatosDonadores.items():
         if datos[9] != 1:
@@ -436,7 +454,6 @@ def generarReportePorRangoEdad(edadInicial, edadFinal=None):
         return True, f"Reporte creado satisfactoriamente.\nArchivo: {nombreArchivo}"
     except Exception as e:
         return False, f"Reporte no creado. Error: {str(e)}"
-
 
 def generarReportePorTipoSangreYProvincia(tipoSangre, provinciaNúmero):
     """
@@ -615,7 +632,6 @@ def generarReporteQuienPuedeDonar(tipoSangre):
         "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas",
         "7": "Limón", "8": "Naturalizado"
     }
-    # quien puede donar a ese tipo de sangre
     compatibles = tipoSangreDonacion.get(tipoSangre, [])
     lista = []
     for cedula, datos in baseDatosDonadores.items():
@@ -667,7 +683,7 @@ def generarReporteQuienPuedeRecibir(tipoSangre):
             lista.append((cedula, datos))
     if not lista:
         return False, "Reporte no creado. No hay donantes compatibles."
-    lista.sort(key=lambda x: x[1][3], reverse=True) # descendente por provincia
+    lista.sort(key=lambda x: x[1][3], reverse=True) # descendente por provincia, lambda accede a datos[3] que es la provincia
     fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     filas = ""
     for cedula, datos in lista:
