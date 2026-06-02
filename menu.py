@@ -930,7 +930,14 @@ def iniciarPrograma():
     btnReportes = tk.Button(ventanaPrincipal, text="6. Reportes", width=35, state=estadoBloqueoEspecial, command=abrirReportes)
     btnReportes.pack(pady=5)
 
-    btnSalir = tk.Button(ventanaPrincipal, text="7. Salir", width=35, command=ventanaPrincipal.quit)
+    btnReportes = tk.Button(ventanaPrincipal, text="6. Reportes", width=35, state=estadoBloqueoEspecial, command=abrirReportes)
+    btnReportes.pack(pady=5)
+
+    def salirPrograma():                                                          # <-- agregás esto
+        messagebox.showinfo("Hasta pronto", "Donar sangre, es donar vida")
+        ventanaPrincipal.quit()
+
+    btnSalir = tk.Button(ventanaPrincipal, text="7. Salir", width=35, command=salirPrograma)  # <-- cambiás esto
     btnSalir.pack(pady=15)
     
     ventanaPrincipal.mainloop()
