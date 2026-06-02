@@ -206,7 +206,7 @@ def abrirGenerarDonadores():
     """
     ventanaGenerar = tk.Toplevel()
     ventanaGenerar.title("Generar Donadores")
-    ventanaGenerar.geometry("400x280")
+    ventanaGenerar.geometry("400x340")
     ventanaGenerar.grab_set()
     tk.Label(ventanaGenerar, text="Generar Donadores",
              font=("Arial", 14, "bold")).pack(pady=15)
@@ -241,8 +241,6 @@ def abrirGenerarDonadores():
     campoCantidad.focus_set()
     ventanaGenerar.bind("<Return>",
         lambda e: ejecutarGeneracionDonadores(ventanaGenerar, campoCantidad))
-def abrirActualizarDonador():
-    pass
 
 def realizarBusquedaParaEliminar(ventanaEliminar, cedulaBuscada, entradaCedula,
                                   botonBuscar, nombreDonador, campoNombre,
@@ -353,7 +351,7 @@ def abrirEliminarDonador():
 
     botonConfirmar = tk.Button(
         marcoBotones, text="Confirmar Eliminación",
-        bg="#A31D1D", fg="white", font=("Arial", 10, "bold"), width=18,
+        bg="#861C1C", fg="white", font=("Arial", 10, "bold"), width=18,
         state="disabled",
         command=lambda: realizarEliminacionDonador(
             ventanaEliminar, cedulaBuscada, listaJustificacion))
@@ -586,6 +584,48 @@ def abrirInsertarLugar():
     botonSalirLugar = tk.Button(marcoBotones, text="Salir", bg="#707070", fg="white", font=("Arial", 11, "bold"), width=12, command=ventanaLugar.destroy)
     botonSalirLugar.pack(side="left", padx=10)
     ventanaLugar.campoNuevoLugar.focus_set()
+    
+def abrirReportePorProvincia(ventanaReportes):
+    """
+    Subventana del reporte 1: Donantes por provincia.
+    """
+    ventanaProv = tk.Toplevel()
+    ventanaProv.title("Reporte: Donantes por Provincia")
+    ventanaProv.geometry("400x220")
+    ventanaProv.grab_set()
+
+    tk.Label(ventanaProv, text="Donantes por Provincia",
+             font=("Arial", 13, "bold")).pack(pady=12)
+
+    marcoContenido = tk.LabelFrame(ventanaProv, text=" Seleccione la Provincia ",
+                                    padx=15, pady=15)
+    marcoContenido.pack(fill="x", padx=20, pady=5)
+
+    provinciasOpciones = ["1. San José", "2. Alajuela", "3. Cartago", "4. Heredia",
+                          "5. Guanacaste", "6. Puntarenas", "7. Limón", "8. Naturalizado"]
+    listaProvincia = ttk.Combobox(marcoContenido, values=provinciasOpciones,
+                                   width=35, state="readonly")
+    listaProvincia.current(0)
+    listaProvincia.pack(pady=5)
+
+    marcoBotones = tk.Frame(ventanaProv)
+    marcoBotones.pack(pady=15)
+
+    def generarReporte():
+        provinciaSeleccionada = listaProvincia.get().split(".")[0].strip()
+        exito, mensaje = fn.generarReporteDonantesProvinicia(provinciaSeleccionada)
+        if exito:
+            messagebox.showinfo("Reporte", mensaje, parent=ventanaProv)
+        else:
+            messagebox.showerror("Reporte", mensaje, parent=ventanaProv)
+
+    tk.Button(marcoBotones, text="Generar reporte",
+              bg="#E0631F", fg="white", font=("Arial", 10, "bold"), width=15,
+              command=generarReporte).pack(side="left", padx=10)
+
+    tk.Button(marcoBotones, text="Regresar",
+              bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
+              command=ventanaProv.destroy).pack(side="left", padx=10)
 
 def abrirReportes():
     """
@@ -600,15 +640,15 @@ def abrirReportes():
              font=("Arial", 16, "bold")).pack(pady=15)
 
     botones = [
-        ("1. Donantes por provincia",         lambda: fn.abrirReportePorProvincia(ventanaReportes)),
-        ("2. Por rango de edad",               lambda: fn.abrirReportePorRangoEdad(ventanaReportes)),
-        ("3. Por tipo de sangre y provincia",  lambda: None),
-        ("4. Lista completa de donadores",     lambda: None),
-        ("5. Mujeres donantes O-",             lambda: None),
-        ("6. ¿A quién puede donar?",           lambda: None),
-        ("7. ¿De quién puede recibir?",        lambda: None),
-        ("8. Donantes no activos",             lambda: None),
-        ("9. Lugares de donación",             lambda: None),
+        ("1. Donantes por provincia",         lambda: abrirReportePorProvincia(ventanaReportes)),
+        ("2. Por rango de edad",               lambda: abrirReportePorRangoEdad(ventanaReportes)),
+        ("3. Por tipo de sangre y provincia",  lambda: abrirReportePorTipoSangreYProvincia(ventanaReportes)),
+        ("4. Lista completa de donadores",     lambda: abrirReporteListaCompleta(ventanaReportes)),
+        ("5. Mujeres donantes O-",             lambda: abrirReporteMujeresONegativo(ventanaReportes)),
+        ("6. ¿A quién puede donar?",           lambda: abrirReporteQuienPuedeDonar(ventanaReportes)),
+        ("7. ¿De quién puede recibir?",        lambda: abrirReporteQuienPuedeRecibir(ventanaReportes)),
+        ("8. Donantes no activos",             lambda: abrirReporteDonantesNoActivos(ventanaReportes)),
+        ("9. Lugares de donación",             lambda: abrirReporteLugaresDonacion(ventanaReportes)),
     ]
 
     for texto, comando in botones:
