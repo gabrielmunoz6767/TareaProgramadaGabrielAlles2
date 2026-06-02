@@ -593,3 +593,58 @@ PuedeRecibir = {
     "AB-": ["O-", "A-", "B-", "AB-"],
     "AB+": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
 }
+
+TEXTOS_JUSTIFICACION = {
+    1: "Enfermedades infecciosas o crónicas (VIH, Hepatitis, Tuberculosis, etc.)",
+    2: "Conductas de riesgo (múltiples parejas, relaciones por dinero o drogas)",
+    3: "Factores de salud física (anemia, presión inestable, fiebre reciente)",
+    4: "Procedimientos médicos recientes (cirugía, tatuajes, transfusiones)",
+    5: "Uso de medicamentos inyectables o fármacos restringidos sin receta",
+    6: "Estilo de vida o viajes a zonas endémicas (malaria, dengue)",
+    7: "Situaciones especiales (embarazo, lactancia, menstruación)",
+    0: "No especificada"
+}
+def generarReporteQuienPuedeDonar(tipoSangre):
+    """
+    Genera reporte HTML de donantes que pueden donar a ese tipo de sangre,
+    agrupados por provincia ascendentemente.
+    """
+    global baseDatosDonadores
+    nombresProvincia = {
+        "1": "San José", "2": "Alajuela", "3": "Cartago",
+        "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas",
+        "7": "Limón", "8": "Naturalizado"
+    }
+    # quien puede donar a ese tipo de sangre
+    compatibles = tipoSangreDonacion.get(tipoSangre, [])
+    lista = []
+    for cedula, datos in baseDatosDonadores.items():
+        if datos[5] in compatibles and datos[9] == 1:
+            lista.append((cedula, datos))
+    if not lista:
+        return False, "Reporte no creado. No hay donantes compatibles."
+    lista.sort(key=lambda x: x[1][3]) # ascendente por provincia
+    fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    filas = ""
+    for cedula, datos in lista:
+        nombreProv = nombresProvincia.get(datos[3], "Desconocida")
+        filas += f"<tr><td>{cedula}</td><td>{datos[0]}</td><td>{datos[5]}</td><td>{datos[1]}</td><td>{datos[2]}</td><td>{nombreProv}</td></tr>"
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>A quien puede donar</title></head>
+<body>
+<h2>Reporte: ¿A quién puede donar el tipo {tipoSangre}?</h2>
+<p>Generado el: {fechaHora}</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Cedula</th><th>Nombre Completo</th><th>Tipo Sangre</th><th>Telefono</th><th>Correo</th><th>Provincia</th></tr>
+{filas}
+</table>
+</body>
+</html>"""
+    try:
+        nombreArchivo = f"reporte_puede_donar_{tipoSangre.replace('+','pos').replace('-','neg')}.html"
+        with open(nombreArchivo, "w", encoding="utf-8") as archivo:
+            archivo.write(html)
+        return True, f"Reporte creado satisfactoriamente.\nArchivo: {nombreArchivo}"
+    except Exception as e:
+        return False, f"Reporte no creado. Error: {str(e)}"
