@@ -846,7 +846,12 @@ def abrirReporteDonantesNoActivos(ventanaReportes):
         messagebox.showinfo("Reporte", mensaje, parent=ventanaReportes)
     else:
         messagebox.showerror("Reporte", mensaje, parent=ventanaReportes)
-
+def abrirReporteLugaresDonacion(ventanaReportes):
+    exito, mensaje = fn.generarReporteLugaresDonacion()
+    if exito:
+        messagebox.showinfo("Reporte", mensaje, parent=ventanaReportes)
+    else:
+        messagebox.showerror("Reporte", mensaje, parent=ventanaReportes)    
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.

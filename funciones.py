@@ -728,3 +728,41 @@ def generarReporteDonantesNoActivos():
         return True, "Reporte creado satisfactoriamente.\nArchivo: reporte_no_activos.html"
     except Exception as e:
         return False, f"Reporte no creado. Error: {str(e)}"
+
+def generarReporteLugaresDonacion():
+    """
+    Genera reporte HTML de lugares de donación ordenados por provincia
+    con cantidad de donadores registrados.
+    """
+    global baseDatosDonadores, lugaresDonacionProvincia
+    nombresProvincia = {
+        "1": "San José", "2": "Alajuela", "3": "Cartago",
+        "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas",
+        "7": "Limón", "8": "Naturalizado"
+    }
+    fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    filas = ""
+    for clave in sorted(nombresProvincia.keys()):
+        nombreProv = nombresProvincia[clave]
+        lugares = lugaresDonacionProvincia.get(clave, [])
+        cantidad = sum(1 for d in baseDatosDonadores.values() if d[3] == clave)
+        lugaresTexto = ", ".join(lugares) if lugares else "Sin recintos registrados"
+        filas += f"<tr><td>{nombreProv}</td><td>{cantidad}</td><td>{lugaresTexto}</td></tr>"
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Lugares de Donacion</title></head>
+<body>
+<h2>Reporte: Lugares de Donacion por Provincia</h2>
+<p>Generado el: {fechaHora}</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Provincia</th><th>Cantidad de Donadores</th><th>Recintos Posibles</th></tr>
+{filas}
+</table>
+</body>
+</html>"""
+    try:
+        with open("reporte_lugares_donacion.html", "w", encoding="utf-8") as archivo:
+            archivo.write(html)
+        return True, "Reporte creado satisfactoriamente.\nArchivo: reporte_lugares_donacion.html"
+    except Exception as e:
+        return False, f"Reporte no creado. Error: {str(e)}"
