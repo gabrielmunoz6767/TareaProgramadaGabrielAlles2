@@ -437,3 +437,46 @@ def generarReportePorRangoEdad(edadInicial, edadFinal=None):
     except Exception as e:
         return False, f"Reporte no creado. Error: {str(e)}"
 
+
+def generarReportePorTipoSangreYProvincia(tipoSangre, provinciaNúmero):
+    """
+    Genera reporte HTML de donantes activos por tipo de sangre y provincia.
+    """
+    global baseDatosDonadores
+    nombresProvincia = {
+        "1": "San José", "2": "Alajuela", "3": "Cartago",
+        "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas",
+        "7": "Limón", "8": "Naturalizado"
+    }
+    lista = []
+    for cedula, datos in baseDatosDonadores.items():
+        if datos[5] == tipoSangre and datos[3] == provinciaNúmero and datos[9] == 1:
+            lista.append((cedula, datos))
+    if not lista:
+        return False, "Reporte no creado. No hay donantes con ese tipo de sangre en esa provincia."
+    lista.sort(key=lambda x: x[1][0])
+    nombreProv = nombresProvincia.get(provinciaNúmero, "Desconocida")
+    fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    filas = ""
+    for cedula, datos in lista:
+        filas += f"<tr><td>{cedula}</td><td>{datos[0]}</td><td>{datos[7]}</td><td>{datos[1]}</td><td>{datos[2]}</td></tr>"
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Donantes por Tipo de Sangre y Provincia</title></head>
+<body>
+<h2>Reporte: Donantes por Tipo de Sangre y Provincia</h2>
+<p>Tipo de sangre: {tipoSangre} | Provincia: {nombreProv}</p>
+<p>Generado el: {fechaHora}</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Cedula</th><th>Nombre Completo</th><th>Fecha Nacimiento</th><th>Telefono</th><th>Correo</th></tr>
+{filas}
+</table>
+</body>
+</html>"""
+    try:
+        nombreArchivo = f"reporte_sangre_{tipoSangre.replace('+','pos').replace('-','neg')}_{nombreProv}.html"
+        with open(nombreArchivo, "w", encoding="utf-8") as archivo:
+            archivo.write(html)
+        return True, f"Reporte creado satisfactoriamente.\nArchivo: {nombreArchivo}"
+    except Exception as e:
+        return False, f"Reporte no creado. Error: {str(e)}"

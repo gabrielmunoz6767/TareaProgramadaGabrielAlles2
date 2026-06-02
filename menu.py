@@ -711,6 +711,51 @@ def abrirReportePorRangoEdad(ventanaReportes):
               bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
               command=ventanaEdad.destroy).pack(side="left", padx=10)    
 
+def abrirReportePorTipoSangreYProvincia(ventanaReportes):
+    ventanaTipoSangre = tk.Toplevel()
+    ventanaTipoSangre.title("Reporte: Por Tipo de Sangre y Provincia")
+    ventanaTipoSangre.geometry("400x250")
+    ventanaTipoSangre.grab_set()
+
+    tk.Label(ventanaTipoSangre, text="Por Tipo de Sangre y Provincia",
+             font=("Arial", 13, "bold")).pack(pady=12)
+
+    marcoContenido = tk.LabelFrame(ventanaTipoSangre, text=" Filtros ",
+                                    padx=15, pady=15)
+    marcoContenido.pack(fill="x", padx=20, pady=5)
+
+    tk.Label(marcoContenido, text="Tipo de sangre:").pack(anchor="w")
+    listaSangre = ttk.Combobox(marcoContenido, values=list(fn.TIPOS_SANGRE),
+                                width=15, state="readonly")
+    listaSangre.current(0)
+    listaSangre.pack(anchor="w", pady=2)
+
+    tk.Label(marcoContenido, text="Provincia:").pack(anchor="w")
+    provinciasOpciones = ["1. San José", "2. Alajuela", "3. Cartago", "4. Heredia",
+                          "5. Guanacaste", "6. Puntarenas", "7. Limón", "8. Naturalizado"]
+    listaProvincia = ttk.Combobox(marcoContenido, values=provinciasOpciones,
+                                   width=30, state="readonly")
+    listaProvincia.current(0)
+    listaProvincia.pack(anchor="w", pady=2)
+
+    marcoBotones = tk.Frame(ventanaTipoSangre)
+    marcoBotones.pack(pady=12)
+
+    def generarReporte():
+        sangre    = listaSangre.get()
+        provincia = listaProvincia.get().split(".")[0].strip()
+        exito, mensaje = fn.generarReportePorTipoSangreYProvincia(sangre, provincia)
+        if exito:
+            messagebox.showinfo("Reporte", mensaje, parent=ventanaTipoSangre)
+        else:
+            messagebox.showerror("Reporte", mensaje, parent=ventanaTipoSangre)
+
+    tk.Button(marcoBotones, text="Generar reporte", bg="#E0631F", fg="white",
+              font=("Arial", 10, "bold"), width=15, command=generarReporte).pack(side="left", padx=10)
+    tk.Button(marcoBotones, text="Regresar", bg="#7D7D7D", fg="white",
+              font=("Arial", 10, "bold"), width=12,
+              command=ventanaTipoSangre.destroy).pack(side="left", padx=10)
+
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.
