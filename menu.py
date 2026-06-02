@@ -627,6 +627,90 @@ def abrirReportePorProvincia(ventanaReportes):
               bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
               command=ventanaProv.destroy).pack(side="left", padx=10)
 
+def abrirReportePorRangoEdad(ventanaReportes):
+    """
+    Subventana del reporte 2: Donantes por rango de edad.
+    Segunda caja se activa solo si la primera es válida, como pide el PDF.
+    """
+    ventanaEdad = tk.Toplevel()
+    ventanaEdad.title("Reporte: Por Rango de Edad")
+    ventanaEdad.geometry("400x280")
+    ventanaEdad.grab_set()
+
+    tk.Label(ventanaEdad, text="Donantes por Rango de Edad",
+             font=("Arial", 13, "bold")).pack(pady=12)
+
+    marcoContenido = tk.LabelFrame(ventanaEdad, text=" Rango de Edad ",
+                                    padx=15, pady=15)
+    marcoContenido.pack(fill="x", padx=20, pady=5)
+
+    tk.Label(marcoContenido, text="Edad inicial (18-65):").pack(anchor="w")
+    campoEdadInicial = tk.Entry(marcoContenido, width=15)
+    campoEdadInicial.pack(anchor="w", pady=2)
+
+    tk.Label(marcoContenido, text="Edad final (18-65):").pack(anchor="w")
+    campoEdadFinal = tk.Entry(marcoContenido, width=15, state="disabled")
+    campoEdadFinal.pack(anchor="w", pady=2)
+
+    def validarEdadInicial(evento):
+        """Activa la segunda caja solo si la primera es válida."""
+        textoInicial = campoEdadInicial.get().strip()
+        try:
+            edad = int(textoInicial)
+            if 18 <= edad <= 65:
+                campoEdadFinal.config(state="normal")
+            else:
+                campoEdadFinal.config(state="disabled")
+                campoEdadFinal.delete(0, tk.END)
+        except ValueError:
+            campoEdadFinal.config(state="disabled")
+            campoEdadFinal.delete(0, tk.END)
+
+    campoEdadInicial.bind("<KeyRelease>", validarEdadInicial)
+
+    marcoBotones = tk.Frame(ventanaEdad)
+    marcoBotones.pack(pady=15)
+
+    def generarReporte():
+        textoInicial = campoEdadInicial.get().strip()
+        textoFinal   = campoEdadFinal.get().strip()
+        try:
+            edadInicial = int(textoInicial)
+            if not (18 <= edadInicial <= 65):
+                messagebox.showerror("Error", "La edad inicial debe ser entre 18 y 65.", parent=ventanaEdad)
+                return
+        except ValueError:
+            messagebox.showerror("Error", "Ingrese una edad inicial válida.", parent=ventanaEdad)
+            return
+
+        edadFinal = None
+        if textoFinal:
+            try:
+                edadFinal = int(textoFinal)
+                if not (18 <= edadFinal <= 65):
+                    messagebox.showerror("Error", "La edad final debe ser entre 18 y 65.", parent=ventanaEdad)
+                    return
+                if edadFinal < edadInicial:
+                    messagebox.showerror("Error", "La edad final no puede ser menor a la inicial.", parent=ventanaEdad)
+                    return
+            except ValueError:
+                messagebox.showerror("Error", "Ingrese una edad final válida.", parent=ventanaEdad)
+                return
+
+        exito, mensaje = fn.generarReportePorRangoEdad(edadInicial, edadFinal)
+        if exito:
+            messagebox.showinfo("Reporte", mensaje, parent=ventanaEdad)
+        else:
+            messagebox.showerror("Reporte", mensaje, parent=ventanaEdad)
+
+    tk.Button(marcoBotones, text="Generar reporte",
+              bg="#E0631F", fg="white", font=("Arial", 10, "bold"), width=15,
+              command=generarReporte).pack(side="left", padx=10)
+
+    tk.Button(marcoBotones, text="Regresar",
+              bg="#7D7D7D", fg="white", font=("Arial", 10, "bold"), width=12,
+              command=ventanaEdad.destroy).pack(side="left", padx=10)    
+
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.

@@ -374,3 +374,66 @@ def generarReporteDonantesProvinicia(provinciaNúmero):
     except Exception as e:
         return False, f"Reporte no creado. Error: {str(e)}"
 
+def generarReportePorRangoEdad(edadInicial, edadFinal=None):
+    """
+    Genera un reporte HTML de donantes activos en un rango de edad.
+    entrada: edadInicial (int), edadFinal (int) opcional
+    salida: (True, "mensaje") o (False, "mensaje")
+    """
+    global baseDatosDonadores
+    annoActual = 2026
+    mesActual = 5
+
+    def calcularEdad(fechaNac):
+        try:
+            dia, mes, anno = map(int, fechaNac.split("/"))
+            edad = annoActual - anno
+            if mesActual < mes:
+                edad -= 1
+            return edad
+        except:
+            return -1
+
+    lista = []
+    for cedula, datos in baseDatosDonadores.items():
+        if datos[9] != 1:
+            continue
+        edad = calcularEdad(datos[7])
+        if edadFinal is None:
+            if edad == edadInicial:
+                lista.append((cedula, datos))
+        else:
+            if edadInicial <= edad <= edadFinal:
+                lista.append((cedula, datos))
+    if not lista:
+        return False, "Reporte no creado. No hay donantes en ese rango de edad."
+    lista.sort(key=lambda x: x[1][0])
+    fechaHora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    if edadFinal is None:
+        rango = f"{edadInicial} años"
+    else:
+        rango = f"{edadInicial} a {edadFinal} años"
+    filas = ""
+    for cedula, datos in lista:
+        filas += f"<tr><td>{cedula}</td><td>{datos[0]}</td><td>{datos[7]}</td><td>{datos[1]}</td><td>{datos[2]}</td></tr>"
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Donantes por Rango de Edad</title></head>
+<body>
+<h2>Reporte: Donantes por Rango de Edad</h2>
+<p>Rango: {rango}</p>
+<p>Generado el: {fechaHora}</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Cedula</th><th>Nombre Completo</th><th>Fecha Nacimiento</th><th>Telefono</th><th>Correo</th></tr>
+{filas}
+</table>
+</body>
+</html>"""
+    try:
+        nombreArchivo = f"reporte_edad_{rango.replace(' ', '_')}.html"
+        with open(nombreArchivo, "w", encoding="utf-8") as archivo:
+            archivo.write(html)
+        return True, f"Reporte creado satisfactoriamente.\nArchivo: {nombreArchivo}"
+    except Exception as e:
+        return False, f"Reporte no creado. Error: {str(e)}"
+
