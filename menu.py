@@ -756,6 +756,13 @@ def abrirReportePorTipoSangreYProvincia(ventanaReportes):
               font=("Arial", 10, "bold"), width=12,
               command=ventanaTipoSangre.destroy).pack(side="left", padx=10)
 
+def abrirReporteListaCompleta(ventanaReportes):
+    exito, mensaje = fn.generarReporteListaCompleta()
+    if exito:
+        messagebox.showinfo("Reporte", mensaje, parent=ventanaReportes)
+    else:
+        messagebox.showerror("Reporte", mensaje, parent=ventanaReportes)
+
 def abrirReportes():
     """
     Ventana principal de reportes con botones para cada sub-reporte.
